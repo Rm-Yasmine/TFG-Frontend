@@ -91,9 +91,6 @@ export default function Dashboard() {
                         <small className="opacity-75">
                           Tareas: {project.tasks.length}
                         </small>
-                        <button className="btn btn-sm btn-light text-purple fw-semibold">
-                          Ver más
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -107,7 +104,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Sección de progreso (ejemplo visual) */}
         <div className="row g-3">
           <div className="col-md-8">
             <div className="card shadow-sm border-0 rounded-4">
@@ -156,7 +152,7 @@ export default function Dashboard() {
                     <path
                       className="text-purple"
                       strokeWidth="3"
-                      strokeDasharray="70, 100"
+                      strokeDasharray="0, 100"
                       strokeLinecap="round"
                       stroke="currentColor"
                       fill="none"
@@ -166,7 +162,7 @@ export default function Dashboard() {
                     />
                   </svg>
                   <div className="circle-label">
-                    <span className="fw-bold fs-4 text-purple">70%</span>
+                    <span className="fw-bold fs-4 text-purple">0%</span>
                   </div>
                 </div>
               </div>
