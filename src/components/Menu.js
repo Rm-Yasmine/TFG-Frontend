@@ -12,11 +12,11 @@ export default function Menu({ onLogout }) {
   const location = useLocation();
 
   const menuItems = [
-    { name: "Inicio", path: "/dashboard", icon: <FaHome /> },
-    { name: "Proyectos", path: "/projects", icon: <FaFolderOpen /> },
-    { name: "Mensajes", path: "/messages", icon: <FaComments /> },
-    { name: "Calendario", path: "/calendar", icon: <FaCalendarAlt /> },
-    { name: "Notas", path: "/notes", icon: <FaStickyNote /> },
+    { name: "inicio", path: "/dashboard", icon: <FaHome /> },
+    { name: "proyectos", path: "/projects", icon: <FaFolderOpen /> },
+    { name: "mensajes", path: "/messages", icon: <FaComments /> },
+    { name: "calendario", path: "/calendar", icon: <FaCalendarAlt /> },
+    { name: "notas", path: "/notes", icon: <FaStickyNote /> },
   ];
 
   return (

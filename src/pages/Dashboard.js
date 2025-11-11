@@ -7,6 +7,8 @@ import "../App.css";
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
 
   // ✅ Obtener usuario autenticado
@@ -14,13 +16,14 @@ export default function Dashboard() {
     try {
       const { data } = await API.get("/me");
       setUser(data.data);
-      fetchProjects(); // luego obtenemos los proyectos
+      fetchProjects();
+      fetchTasks(data.data.id);
     } catch {
       navigate("/login");
     }
   };
 
-  // ✅ Obtener proyectos desde el endpoint real
+  // ✅ Obtener proyectos
   const fetchProjects = async () => {
     try {
       const { data } = await API.get(
@@ -31,6 +34,27 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("Error al obtener proyectos:", error);
+    }
+  };
+
+  const fetchTasks = async (userId) => {
+    try {
+      const { data } = await API.get(
+        `https://tfg-backend-production-bc6a.up.railway.app/api/tasks?assignee_id=${userId}`
+      );
+      if (data.status === "success") {
+        setTasks(data.data);
+
+        const completed = data.data.filter(
+          (t) => t.status === "COMPLETED"
+        ).length;
+        const percent = data.data.length
+          ? Math.round((completed / data.data.length) * 100)
+          : 0;
+        setProgress(percent);
+      }
+    } catch (error) {
+      console.error("Error al obtener tareas:", error);
     }
   };
 
@@ -53,15 +77,12 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-container d-flex">
-      {/* Menú lateral */}
       <Menu active="inicio" onLogout={handleLogout} />
 
-      {/* Contenido principal */}
       <div className="content flex-grow-1 p-4">
-        <h2 className="fw-bold mb-3">Bienvenida, {user.name}!</h2>
-        <h5 className="text-muted mb-4">Tus proyectos</h5>
+        <h2 className="fw-bold mb-3">Bienvenida, {user.name}</h2>
+        <h5 className="text-muted mb-4">Mis proyectos</h5>
 
-        {/* Grid de proyectos */}
         <div className="row g-4 mb-5">
           {projects.length > 0 ? (
             projects.map((project) => (
@@ -89,7 +110,7 @@ export default function Dashboard() {
 
                       <div className="d-flex justify-content-between align-items-center">
                         <small className="opacity-75">
-                          Tareas: {project.tasks.length}
+                          Tareas: {project.tasks?.length || 0}
                         </small>
                       </div>
                     </div>
@@ -108,32 +129,40 @@ export default function Dashboard() {
           <div className="col-md-8">
             <div className="card shadow-sm border-0 rounded-4">
               <div className="card-body">
-                <h5 className="fw-semibold mb-3">Resumen de tareas</h5>
-                {projects.length > 0 ? (
-                  projects.map((project) => (
+                <h5 className="fw-semibold mb-3">Mis tareas asignadas</h5>
+
+                {tasks.length > 0 ? (
+                  tasks.map((task) => (
                     <div
-                      key={project.id}
+                      key={task.id}
                       className="border-bottom py-2 d-flex justify-content-between align-items-center"
                     >
                       <div>
-                        <div className="fw-semibold">{project.title}</div>
+                        <div className="fw-semibold">{task.title}</div>
                         <small className="text-muted">
-                          {project.tasks.length} tareas pendientes
+                          Proyecto: {task.project?.title || "Sin proyecto"}
                         </small>
                       </div>
-                      <span className="badge bg-light text-purple">
-                        {project.tasks.length}
+                      <span
+                        className={`badge ${
+                          task.status === "COMPLETED"
+                            ? "bg-success"
+                            : task.status === "IN_PROGRESS"
+                            ? "bg-warning text-dark"
+                            : "bg-secondary"
+                        }`}
+                      >
+                        {task.status}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-muted">Sin tareas disponibles.</p>
+                  <p className="text-muted">No tienes tareas asignadas.</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Progreso visual */}
           <div className="col-md-4">
             <div className="card shadow-sm border-0 rounded-4 text-center">
               <div className="card-body">
@@ -152,7 +181,7 @@ export default function Dashboard() {
                     <path
                       className="text-purple"
                       strokeWidth="3"
-                      strokeDasharray="0, 100"
+                      strokeDasharray={`${progress}, 100`}
                       strokeLinecap="round"
                       stroke="currentColor"
                       fill="none"
@@ -162,14 +191,16 @@ export default function Dashboard() {
                     />
                   </svg>
                   <div className="circle-label">
-                    <span className="fw-bold fs-4 text-purple">0%</span>
+                    <span className="fw-bold fs-4 text-purple">
+                      {progress}%
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div> {/* contenido */}
+      </div> 
     </div>
   );
 }
