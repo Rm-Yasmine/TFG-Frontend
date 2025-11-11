@@ -1,17 +1,22 @@
-import React, { useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import '../App.css';
-import Projects from '../pages/projects';
-
+import React, { useRef } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Dashboard from "../pages/Dashboard";
+import "../App.css";
+import Projects from "../pages/Projects";
+import ProjectDetail from "../pages/ProjectDetail";
 function AnimatedRoutes() {
   const location = useLocation();
   const nodeRef = useRef(null);
 
-  const animatedPaths = ['/login', '/register'];
+  const animatedPaths = ["/login", "/register"];
 
   const isAnimated = animatedPaths.includes(location.pathname);
 
@@ -37,6 +42,7 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/projectdetail" element={<ProjectDetail />} />
         </Routes>
       )}
     </>
