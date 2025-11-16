@@ -2,7 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import {
   FaHome,
   FaFolderOpen,
-  FaComments,
   FaCalendarAlt,
   FaStickyNote,
   FaSignOutAlt,
@@ -12,9 +11,8 @@ export default function Menu({ onLogout }) {
   const location = useLocation();
 
   const menuItems = [
-    { name: "inicio", path: "/dashboard", icon: <FaHome /> },
+    { name: "inicio", path: "/", icon: <FaHome /> },
     { name: "proyectos", path: "/projects", icon: <FaFolderOpen /> },
-    { name: "mensajes", path: "/messages", icon: <FaComments /> },
     { name: "calendario", path: "/calendar", icon: <FaCalendarAlt /> },
     { name: "notas", path: "/notes", icon: <FaStickyNote /> },
   ];

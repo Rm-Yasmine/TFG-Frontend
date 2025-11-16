@@ -1,77 +1,69 @@
-import React, { useEffect, useState } from "react";
-import API from "../api/axios";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import API from "../api/axios";
 import Menu from "../components/Menu";
-import "../App.css";
 
 export default function ProjectDetail() {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [user, setUser] = useState(null);
-  const [newTask, setNewTask] = useState({ title: "", description: "", due_date: "" });
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Obtener usuario autenticado
+  const [newTask, setNewTask] = useState({
+    title: "",
+    due_date: "",
+  });
+
   const fetchUser = async () => {
     const { data } = await API.get("/me");
     setUser(data.data);
   };
 
-  // 🔹 Cargar datos del proyecto
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const { data } = await API.get(`/projects/${id}`);
       setProject(data.data);
-    } catch (error) {
-      console.error("Error al cargar proyecto:", error);
+    } catch (err) {
+      console.error("Error cargando proyecto:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchUser();
     fetchProject();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const handleCreateTask = async (e) => {
-    e.preventDefault();
-    if (!newTask.title.trim()) return alert("El título es obligatorio");
-
-    try {
-      await API.post("/tasks", {
-        ...newTask,
-        project_id: project.id,
-        created_by: user.id,
-      });
-      setNewTask({ title: "", description: "", due_date: "" });
-      fetchProject();
-    } catch (error) {
-      console.error("Error al crear tarea:", error);
-    }
-  };
-
-  const handleStatusChange = async (taskId, status) => {
-    try {
-      await API.patch(`/tasks/${taskId}/status`, { status });
-      fetchProject();
-    } catch (error) {
-      console.error("Error al actualizar estado:", error);
-    }
-  };
+  }, [fetchProject]);
 
   if (loading) return <p className="text-center mt-5">Cargando...</p>;
   if (!project || !user) return null;
 
-  const isOwner = project.owner_id === user.id;
+  const isOwner = project.owner?.id === user.id;
 
-  // 🧮 Contar tareas por estado
   const total = project.tasks.length;
   const completed = project.tasks.filter((t) => t.status === "COMPLETED").length;
-  const inProgress = project.tasks.filter((t) => t.status === "IN_PROGRESS").length;
   const pending = project.tasks.filter((t) => t.status === "PENDING").length;
-  const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const inProgress = project.tasks.filter((t) => t.status === "IN_PROGRESS").length;
+  const progress = total ? Math.round((completed / total) * 100) : 0;
+
+  const createTask = async (e) => {
+    e.preventDefault();
+    if (!newTask.title) return;
+
+    await API.post("/tasks", {
+      ...newTask,
+      project_id: project.id,
+      created_by: user.id,
+    });
+
+    setNewTask({ title: "", due_date: "" });
+    fetchProject();
+  };
+
+  const changeStatus = async (taskId, status) => {
+    await API.patch(`/tasks/${taskId}/status`, { status });
+    fetchProject();
+  };
 
   return (
     <div className="dashboard-container d-flex">
@@ -79,29 +71,28 @@ export default function ProjectDetail() {
       <div className="content flex-grow-1 p-4">
         <h3 className="fw-bold mb-4">Detalles del Proyecto</h3>
 
-        {/* --- Encabezado del proyecto --- */}
-        <div className="card shadow-sm border-0 p-4 mb-4 rounded-4">
-          <h4 className="fw-semibold mb-2">{project.title}</h4>
-          <p className="text-muted small mb-3">{project.description}</p>
-          <div className="d-flex justify-content-between small text-muted">
+        <div className="card shadow-sm p-4 mb-4 rounded-4">
+          <h4>{project.title}</h4>
+          <p className="text-muted">{project.description}</p>
+          <div className="d-flex justify-content-between text-muted small">
             <span>📅 Inicio: {new Date(project.start_date).toLocaleDateString()}</span>
             <span>🏁 Fin: {new Date(project.end_date).toLocaleDateString()}</span>
           </div>
         </div>
 
-        {/* --- Miembros y estadísticas --- */}
         <div className="row g-3 mb-4">
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 rounded-4 h-100">
+            <div className="card shadow-sm rounded-4 h-100">
               <div className="card-body">
-                <h6 className="fw-semibold mb-3">👥 Miembros del equipo</h6>
+                <h6 className="fw-semibold mb-3">👥 Miembros</h6>
                 {project.members.map((m) => (
                   <div key={m.id} className="d-flex align-items-center mb-2">
-                    <div className="avatar bg-purple text-white rounded-circle me-2">
-                      {m.name[0].toUpperCase()}
+                    <div className="avatar bg-purple rounded-circle me-2 text-white">
+                      {m.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="fw-semibold">{m.name}</div>
+                      <strong>{m.name}</strong>
+                      <br />
                       <small className="text-muted">{m.email}</small>
                     </div>
                   </div>
@@ -111,34 +102,21 @@ export default function ProjectDetail() {
           </div>
 
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 rounded-4 h-100 text-center">
+            <div className="card shadow-sm rounded-4 h-100 text-center">
               <div className="card-body">
-                <h6 className="fw-semibold mb-3">📊 Estadísticas</h6>
-                <div className="position-relative mx-auto" style={{ width: 100, height: 100 }}>
-                  <svg className="w-100 h-100" viewBox="0 0 36 36">
+                <h6 className="fw-semibold mb-3">📊 Progreso</h6>
+                <div className="progress-circle position-relative mx-auto" style={{ width: 120 }}>
+                  <svg viewBox="0 0 36 36" className="w-100 h-100">
+                    <path stroke="#eee" strokeWidth="3" fill="none" d="M18 2a16 16 0 1 1 0 32 16 16 0 1 1 0-32" />
                     <path
-                      strokeWidth="3"
-                      stroke="#eee"
-                      fill="none"
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      strokeWidth="3"
-                      strokeDasharray={`${progress}, 100`}
-                      strokeLinecap="round"
                       stroke="#9b5de5"
+                      strokeWidth="3"
                       fill="none"
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      strokeDasharray={`${progress},100`}
+                      d="M18 2a16 16 0 1 1 0 32 16 16 0 1 1 0-32"
                     />
                   </svg>
-                  <div
-                    className="position-absolute top-50 start-50 translate-middle fw-bold"
-                    style={{ color: "#9b5de5" }}
-                  >
+                  <div className="position-absolute top-50 start-50 translate-middle fw-bold" style={{ color: "#9b5de5" }}>
                     {progress}%
                   </div>
                 </div>
@@ -147,9 +125,9 @@ export default function ProjectDetail() {
           </div>
 
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 rounded-4 h-100">
+            <div className="card shadow-sm rounded-4 h-100">
               <div className="card-body">
-                <h6 className="fw-semibold mb-3">📈 Resumen</h6>
+                <h6 className="fw-semibold">📈 Resumen</h6>
                 <p>Total tareas: {total}</p>
                 <p>Completadas: {completed}</p>
                 <p>En progreso: {inProgress}</p>
@@ -159,16 +137,15 @@ export default function ProjectDetail() {
           </div>
         </div>
 
-        {/* --- Crear tarea (solo dueña) --- */}
         {isOwner && (
-          <div className="card shadow-sm border-0 rounded-4 p-4 mb-4">
+          <div className="card shadow-sm rounded-4 p-4 mb-4">
             <h6 className="fw-semibold mb-3">➕ Nueva tarea</h6>
-            <form onSubmit={handleCreateTask}>
+            <form onSubmit={createTask}>
               <div className="row g-2">
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <input
                     type="text"
-                    placeholder="Título"
+                    placeholder="Título de la tarea"
                     className="form-control"
                     value={newTask.title}
                     onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
@@ -182,52 +159,42 @@ export default function ProjectDetail() {
                     onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
                   />
                 </div>
-                <div className="col-md-4">
-                  <button className="btn btn-purple w-100">Crear tarea</button>
+                <div className="col-md-2">
+                  <button className="btn btn-purple w-100">Crear</button>
                 </div>
               </div>
             </form>
           </div>
         )}
 
-        {/* --- Listado de tareas --- */}
-        <div className="card shadow-sm border-0 rounded-4 p-4">
-          <h6 className="fw-semibold mb-3">🗂️ Tareas del proyecto</h6>
-          {project.tasks.length === 0 ? (
-            <p className="text-muted">No hay tareas todavía.</p>
-          ) : (
-            project.tasks.map((task) => (
-              <div
-                key={task.id}
-                className="d-flex justify-content-between align-items-center border-bottom py-2"
-              >
-                <div>
-                  <strong>{task.title}</strong>
-                  <div className="small text-muted">
-                    {task.assignee ? `👤 ${task.assignee.name}` : "Sin asignar"} —{" "}
-                    {new Date(task.due_date).toLocaleDateString()}
-                  </div>
+        <div className="card shadow-sm rounded-4 p-4">
+          <h6 className="fw-semibold mb-3">🗂 Listado de tareas</h6>
+          {project.tasks.map((task) => (
+            <div className="d-flex justify-content-between border-bottom py-2" key={task.id}>
+              <div>
+                <strong>{task.title}</strong>
+                <div className="text-muted small">
+                  {task.assignee ? `Asignada a ${task.assignee.name}` : "Sin asignar"} —{" "}
+                  {new Date(task.due_date).toLocaleDateString()}
                 </div>
-
-                {/* Control de estado */}
-                {isOwner ? (
-                  <span className="badge bg-light text-purple">{task.status}</span>
-                ) : task.assignee_id === user.id ? (
-                  <select
-                    className="form-select form-select-sm w-auto"
-                    value={task.status}
-                    onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                  >
-                    <option value="PENDING">Pendiente</option>
-                    <option value="IN_PROGRESS">En progreso</option>
-                    <option value="COMPLETED">Completada</option>
-                  </select>
-                ) : (
-                  <span className="badge bg-light text-secondary">{task.status}</span>
-                )}
               </div>
-            ))
-          )}
+              {isOwner ? (
+                <span className="badge bg-light text-purple">{task.status}</span>
+              ) : task.assignee_id === user.id ? (
+                <select
+                  className="form-select form-select-sm"
+                  value={task.status}
+                  onChange={(e) => changeStatus(task.id, e.target.value)}
+                >
+                  <option value="PENDING">Pendiente</option>
+                  <option value="IN_PROGRESS">En progreso</option>
+                  <option value="COMPLETED">Completada</option>
+                </select>
+              ) : (
+                <span className="badge bg-light text-muted">{task.status}</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

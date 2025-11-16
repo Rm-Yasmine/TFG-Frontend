@@ -11,7 +11,6 @@ export default function Dashboard() {
   const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
 
-  // ✅ Obtener usuario autenticado
   const fetchUser = async () => {
     try {
       const { data } = await API.get("/me");
@@ -23,7 +22,6 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ Obtener proyectos
   const fetchProjects = async () => {
     try {
       const { data } = await API.get(

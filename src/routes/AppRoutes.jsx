@@ -12,6 +12,8 @@ import Dashboard from "../pages/Dashboard";
 import "../App.css";
 import Projects from "../pages/Projects";
 import ProjectDetail from "../pages/ProjectDetail";
+import Notes from "../pages/Notes";
+import Calendar from "../pages/Calendar";
 function AnimatedRoutes() {
   const location = useLocation();
   const nodeRef = useRef(null);
@@ -43,6 +45,9 @@ function AnimatedRoutes() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projectdetail" element={<ProjectDetail />} />
+          <Route path="/notes" element={<Notes />} />
+          <Route path="/calendar" element={<Calendar />} />
+
         </Routes>
       )}
     </>
