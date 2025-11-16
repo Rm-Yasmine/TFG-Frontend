@@ -103,6 +103,72 @@ h2, h3 {
   background-color: #f8f9fa;
 }
 
+
+
+/* contenido principal */
+.content {
+  background-color: #f8f9fa;
+}
+
+/* tarjetas de proyectos */
+.project-card {
+  background: linear-gradient(135deg, #b587f3, #7948e3);
+  border-radius: 20px;
+}
+
+.sidebar {
+  background: #f9f9fb;
+  min-width: 220px;
+  border-right: 1px solid #eee;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%; /* hace el logo circular */
+  background: #fff;
+  padding: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.menu-item {
+  color: #444;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #eceaf7;
+  color: #7a48e3;
+}
+
+.menu-item.active {
+  background: #7a48e3;
+  color: #fff;
+}
+
+.logout-btn {
+  background: #f0f0f0;
+  border: none;
+  color: #444;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #e0e0e0;
+  color: #000;
+}
+.content {
+  padding: 30px;
+}
 /* sidebar */
 .sidebar {
   width: 230px;
@@ -149,44 +215,29 @@ h2, h3 {
   background-color: #9d7eff;
 }
 
-/* contenido principal */
-.content {
-  background-color: #f8f9fa;
+.projects-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  width: 100%;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+.projects-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.projects-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
 }
 
-/* tarjetas de proyectos */
 .project-card {
-  background: linear-gradient(135deg, #b57cff, #7a48e3);
-  border-radius: 20px;
+  width: 300px; /* 👈 ancho fijo para todas */
+  background-color: #f6f4fc;
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease;
+  flex-shrink: 0;
 }
-
-/* círculo de progreso */
-.progress-circle {
-  width: 120px;
-  height: 120px;
+.project-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
-.progress-circle svg path {
-  stroke: currentColor;
-}
-
-.circle-label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.text-purple {
-  color: #b57cff !important;
-}
-
-.btn-link.text-purple {
-  color: #b57cff;
-  text-decoration: none;
-}
-
-.btn-link.text-purple:hover {
-  color: #7a48e3;
-}
-

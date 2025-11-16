@@ -8,8 +8,14 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [progress, setProgress] = useState(0);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [sessions, setSessions] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const fetchUser = async () => {
     try {
@@ -17,6 +23,7 @@ export default function Dashboard() {
       setUser(data.data);
       fetchProjects();
       fetchTasks(data.data.id);
+      fetchSessions();
     } catch {
       navigate("/login");
     }
@@ -24,9 +31,7 @@ export default function Dashboard() {
 
   const fetchProjects = async () => {
     try {
-      const { data } = await API.get(
-        "https://tfg-backend-production-bc6a.up.railway.app/api/projects"
-      );
+      const { data } = await API.get("/projects/sorted-by-end-date");
       if (data.status === "success") {
         setProjects(data.data);
       }
@@ -37,22 +42,48 @@ export default function Dashboard() {
 
   const fetchTasks = async (userId) => {
     try {
-      const { data } = await API.get(
-        `https://tfg-backend-production-bc6a.up.railway.app/api/tasks?assignee_id=${userId}`
-      );
+      const { data } = await API.get(`/tasks?assignee_id=${userId}`);
       if (data.status === "success") {
         setTasks(data.data);
-
-        const completed = data.data.filter(
-          (t) => t.status === "COMPLETED"
-        ).length;
-        const percent = data.data.length
-          ? Math.round((completed / data.data.length) * 100)
-          : 0;
-        setProgress(percent);
       }
     } catch (error) {
       console.error("Error al obtener tareas:", error);
+    }
+  };
+
+  const fetchSessions = async () => {
+    try {
+      const { data } = await API.get("/time-sessions");
+      if (data.status === "success") {
+        setSessions(data.data);
+      }
+    } catch (error) {
+      console.error("Error al obtener sesiones:", error);
+    }
+  };
+
+  const startSession = async () => {
+    if (!selectedProjectId) return alert("Selecciona un proyecto");
+    try {
+      const { data } = await API.post("/time-sessions/start", {
+        project_id: selectedProjectId,
+      });
+      setActiveSessionId(data.data.id);
+      fetchSessions();
+    } catch (err) {
+      console.error("Error iniciando sesión:", err);
+    }
+  };
+
+  const stopSession = async () => {
+    try {
+      const { data } = await API.post("/time-sessions/stop", {
+        session_id: activeSessionId,
+      });
+      setActiveSessionId(null);
+      fetchSessions();
+    } catch (err) {
+      console.error("Error deteniendo sesión:", err);
     }
   };
 
@@ -66,10 +97,14 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const formatDuration = (start, end) => {
+    if (!end) return "En curso...";
+    const diff = (new Date(end) - new Date(start)) / 1000;
+    const h = Math.floor(diff / 3600);
+    const m = Math.floor((diff % 3600) / 60);
+    const s = Math.floor(diff % 60);
+    return `${h}h ${m}m ${s}s`;
+  };
 
   if (!user) return <p className="text-center mt-5">Cargando...</p>;
 
@@ -78,57 +113,49 @@ export default function Dashboard() {
       <Menu active="inicio" onLogout={handleLogout} />
 
       <div className="content flex-grow-1 p-4">
-        <h2 className="fw-bold mb-3">Bienvenida, {user.name}</h2>
-        <h5 className="text-muted mb-4">Mis proyectos</h5>
+        <h2 className="fw-bold mb-4">Bienvenida, {user.name}</h2>
 
-        <div className="row g-4 mb-5">
+        <h5 className="fw-semibold mb-3">Proyectos recientes</h5>
+        <div className="projects-scroll d-flex overflow-auto mb-4 w-100">
           {projects.length > 0 ? (
-            projects.map((project) => (
-              <div className="col-md-4" key={project.id}>
-                <div className="card project-card shadow-sm border-0 h-100">
-                  <div className="card-body text-white d-flex flex-column justify-content-between">
-                    <div>
-                      <h5 className="card-title fw-bold mb-2">
-                        {project.title}
-                      </h5>
-                      <p className="small opacity-75">
-                        {project.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-3">
-                      <p className="mb-1 small">
-                        <strong>Inicio:</strong>{" "}
-                        {new Date(project.start_date).toLocaleDateString()}
-                      </p>
-                      <p className="mb-2 small">
-                        <strong>Fin:</strong>{" "}
-                        {new Date(project.end_date).toLocaleDateString()}
-                      </p>
-
-                      <div className="d-flex justify-content-between align-items-center">
-                        <small className="opacity-75">
-                          Tareas: {project.tasks?.length || 0}
-                        </small>
-                      </div>
-                    </div>
+            projects.slice(0, 3).map((project) => (
+              <div
+                key={project.id}
+                className="card shadow-sm border-0 me-3 flex-shrink-0 project-card"
+              >
+                <div className="card-body d-flex flex-column justify-content-between h-100">
+                  <div>
+                    <h5 className="fw-bold text-purple mb-2">
+                      {project.title}
+                    </h5>
+                    <p className="text-muted small mb-3">
+                      {project.description || "Sin descripción"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="small mb-1">
+                      <strong>Inicio:</strong>{" "}
+                      {new Date(project.start_date).toLocaleDateString()}
+                    </p>
+                    <p className="small mb-0">
+                      <strong>Fin:</strong>{" "}
+                      {new Date(project.end_date).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center text-secondary">
-              No tienes proyectos todavía.
-            </div>
+            <div className="text-secondary">No tienes proyectos todavía.</div>
           )}
         </div>
 
+        {/* Tareas asignadas */}
         <div className="row g-3">
           <div className="col-md-8">
             <div className="card shadow-sm border-0 rounded-4">
               <div className="card-body">
                 <h5 className="fw-semibold mb-3">Mis tareas asignadas</h5>
-
                 {tasks.length > 0 ? (
                   tasks.map((task) => (
                     <div
@@ -161,44 +188,75 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Control de tiempo */}
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 rounded-4 text-center">
+            <div className="card shadow-sm border-0 rounded-4">
               <div className="card-body">
-                <h6 className="fw-semibold mb-3">Progreso general</h6>
-                <div className="progress-circle position-relative mx-auto">
-                  <svg className="w-100 h-100" viewBox="0 0 36 36">
-                    <path
-                      className="text-light"
-                      strokeWidth="3"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className="text-purple"
-                      strokeWidth="3"
-                      strokeDasharray={`${progress}, 100`}
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845
-                        a 15.9155 15.9155 0 0 1 0 31.831
-                        a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="circle-label">
-                    <span className="fw-bold fs-4 text-purple">
-                      {progress}%
-                    </span>
-                  </div>
-                </div>
+                <h6 className="fw-semibold mb-3">Control de tiempo</h6>
+                <select
+                  className="form-select mb-3"
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                >
+                  <option value="">Selecciona un proyecto</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+                {activeSessionId ? (
+                  <button
+                    className="btn btn-danger w-100"
+                    onClick={stopSession}
+                  >
+                    Detener
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary w-100"
+                    onClick={startSession}
+                  >
+                    Iniciar
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
-      </div> 
+
+        {/* Historial */}
+        <div className="card shadow-sm border-0 rounded-4 mt-4">
+          <div className="card-body">
+            <h6 className="fw-semibold mb-3">Historial de sesiones</h6>
+            {sessions.length > 0 ? (
+              sessions.map((s) => (
+                <div
+                  key={s.id}
+                  className="border-bottom py-2 d-flex justify-content-between"
+                >
+                  <div>
+                    <strong>
+                      {s.project?.title || "Proyecto desconocido"}
+                    </strong>
+                    <div className="text-muted small">
+                      Inicio: {new Date(s.start_time).toLocaleString()}
+                      {s.end_time && (
+                        <> — Fin: {new Date(s.end_time).toLocaleString()}</>
+                      )}
+                    </div>
+                  </div>
+                  <span className="badge bg-light text-dark">
+                    {formatDuration(s.start_time, s.end_time)}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted">No hay sesiones registradas.</p>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
