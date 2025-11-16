@@ -3,47 +3,26 @@ import API from "../api/axios";
 import Menu from "../components/Menu";
 import "../App.css";
 
-/**
- * Notes.jsx
- * Página de Notas: listar, crear, editar, eliminar, ver compartidas.
- *
- * Requiere:
- * - API axios con baseURL y token (localStorage token).
- * - Rutas backend:
- *    GET  /notes
- *    GET  /notes/shared
- *    POST /notes
- *    PUT  /notes/{id}
- *    DELETE /notes/{id}
- */
-
 export default function Notes() {
   const [user, setUser] = useState(null);
   const [notes, setNotes] = useState([]);
-  const [sharedNotes, setSharedNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("mine"); // 'mine' | 'shared'
 
-  // modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
+  const [saving, setSaving] = useState(false);
 
-  // form
-  const emptyForm = { title: "", content: "", is_shared: false };
+  const emptyForm = { title: "", content: "" };
   const [form, setForm] = useState(emptyForm);
 
-  // load user + notes
   useEffect(() => {
     (async () => {
       try {
         const me = await API.get("/me");
         setUser(me.data.data);
-
         await loadNotes();
-        await loadSharedNotes();
       } catch (err) {
-        console.error("Error fetching user/notes:", err.response?.data || err.message);
+        console.error("Error cargando usuario/notas:", err);
       } finally {
         setLoading(false);
       }
@@ -57,163 +36,83 @@ export default function Notes() {
         setNotes(res.data.data || []);
       } else {
         setNotes([]);
-        console.error("Notes: unexpected response", res.data);
       }
     } catch (err) {
-      console.error("Error loading notes:", err.response?.data || err.message);
+      console.error("Error cargando notas:", err);
       setNotes([]);
     }
   }
 
-  async function loadSharedNotes() {
-    try {
-      const res = await API.get("/notes/shared");
-      if (res.data?.status === "success") {
-        setSharedNotes(res.data.data || []);
-      } else {
-        setSharedNotes([]);
-      }
-    } catch (err) {
-      console.error("Error loading shared notes:", err.response?.data || err.message);
-      setSharedNotes([]);
-    }
-  }
-
-  // open new note modal
   function openNew() {
     setEditingNote(null);
     setForm(emptyForm);
     setModalOpen(true);
   }
 
-  // open edit modal
-  function openEdit(note) {
+  function openView(note) {
     setEditingNote(note);
     setForm({
       title: note.title || "",
       content: note.content || "",
-      is_shared: !!note.is_shared,
     });
     setModalOpen(true);
   }
 
-  // save note (create or update)
   async function saveNote(e) {
     e.preventDefault();
     if (!form.title.trim()) return alert("El título es obligatorio");
-
     setSaving(true);
+
     try {
       if (editingNote) {
-        // update
-        const res = await API.put(`/notes/${editingNote.id}`, {
-          title: form.title,
-          content: form.content,
-          is_shared: form.is_shared,
-        });
+        const res = await API.put(`/notes/${editingNote.id}`, form);
         if (res.data?.status === "success") {
           await loadNotes();
-          await loadSharedNotes();
           setModalOpen(false);
         } else {
           alert("No se pudo actualizar la nota");
         }
       } else {
-        // create
-        const res = await API.post("/notes", {
-          title: form.title,
-          content: form.content,
-          is_shared: form.is_shared,
-        });
+        const res = await API.post("/notes", form);
         if (res.data?.status === "success") {
           await loadNotes();
-          await loadSharedNotes();
           setModalOpen(false);
         } else {
           alert("No se pudo crear la nota");
         }
       }
     } catch (err) {
-      console.error("Save note error:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Error guardando la nota");
+      console.error("Error guardando nota:", err);
+      alert("Error al guardar");
     } finally {
       setSaving(false);
     }
   }
 
-  // delete note
   async function deleteNote(note) {
-    if (!window.confirm("¿Seguro que quieres eliminar esta nota?")) return;
+    if (!window.confirm("¿Eliminar esta nota?")) return;
     try {
       const res = await API.delete(`/notes/${note.id}`);
       if (res.data?.status === "success") {
         await loadNotes();
-        await loadSharedNotes();
+        setModalOpen(false);
       } else {
-        alert("No se pudo eliminar la nota");
+        alert("No se pudo eliminar");
       }
     } catch (err) {
-      console.error("Delete note error:", err.response?.data || err.message);
-      alert("Error eliminando la nota");
+      console.error("Error eliminando nota:", err);
+      alert("Error al eliminar");
     }
   }
 
-  // toggle share quick from list (optimistic)
-  async function toggleShare(note) {
-    try {
-      const res = await API.put(`/notes/${note.id}`, {
-        is_shared: !note.is_shared,
-      });
-      if (res.data?.status === "success") {
-        await loadNotes();
-        await loadSharedNotes();
-      } else {
-        alert("No se pudo actualizar");
-      }
-    } catch (err) {
-      console.error("toggle share error:", err.response?.data || err.message);
-      alert("Error actualizando");
-    }
-  }
-
-  // UI small components
-  function NoteCard({ note, isMine = true }) {
+  function NoteCard({ note }) {
     return (
-      <div className="card mb-3 shadow-sm note-card">
-        <div className="card-body d-flex justify-content-between align-items-start">
-          <div style={{ flex: 1 }}>
-            <div className="d-flex align-items-center mb-1">
-              <h6 className="mb-0 me-2">{note.title}</h6>
-              {note.is_shared && <span className="badge bg-purple text-white">Compartida</span>}
-            </div>
-            <p className="small text-muted mb-1">
-              {note.content ? note.content.slice(0, 120) : <em>Sin contenido</em>}
-            </p>
-            <small className="text-muted">Creada: {new Date(note.created_at).toLocaleString()}</small>
-          </div>
-
-          <div className="ms-3 d-flex flex-column align-items-end">
-            {isMine && (
-              <>
-                <button className="btn btn-sm btn-outline-primary mb-2" onClick={() => openEdit(note)}>
-                  Editar
-                </button>
-                <button className="btn btn-sm btn-outline-danger mb-2" onClick={() => deleteNote(note)}>
-                  Borrar
-                </button>
-                <button
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={() => toggleShare(note)}
-                  title={note.is_shared ? "Hacer privada" : "Compartir"}
-                >
-                  {note.is_shared ? "Privar" : "Compartir"}
-                </button>
-              </>
-            )}
-            {!isMine && note.is_shared && (
-              <small className="text-muted">Compartida por {note.user?.name || "otro"}</small>
-            )}
-          </div>
+      <div className="card mb-3 shadow-sm note-card" onClick={() => openView(note)} style={{ cursor: "pointer" }}>
+        <div className="card-body">
+          <h6 className="mb-1">{note.title}</h6>
+          <p className="small text-muted mb-0">
+            {note.content ? note.content.slice(0, 100) + "…" : <em>Sin contenido</em>}
+          </p>
         </div>
       </div>
     );
@@ -228,44 +127,17 @@ export default function Notes() {
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
             <h3 className="fw-bold mb-0">Notas</h3>
-            <small className="text-muted">Crea, edita, comparte y organiza tus notas</small>
+            <small className="text-muted">Crea, edita y organiza tus notas personales</small>
           </div>
-
-          <div className="d-flex align-items-center">
-            <div className="btn-group me-3" role="group">
-              <button className={`btn btn-sm ${tab === "mine" ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setTab("mine")}>
-                Mis notas
-              </button>
-              <button className={`btn btn-sm ${tab === "shared" ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setTab("shared")}>
-                Compartidas
-              </button>
-            </div>
-
-            <button className="btn btn-purple" onClick={openNew}>
-              + Nueva nota
-            </button>
-          </div>
+          <button className="btn btn-purple" onClick={openNew}>+ Nueva nota</button>
         </div>
 
-        {tab === "mine" ? (
-          <>
-            {notes.length === 0 ? (
-              <div className="text-center text-secondary py-5">No tienes notas todavía. Crea la primera.</div>
-            ) : (
-              notes.map((n) => <NoteCard key={n.id} note={n} isMine={n.user_id === user.id} />)
-            )}
-          </>
+        {notes.length === 0 ? (
+          <div className="text-center text-secondary py-5">No tienes notas todavía. Crea la primera.</div>
         ) : (
-          <>
-            {sharedNotes.length === 0 ? (
-              <div className="text-center text-secondary py-5">No hay notas compartidas.</div>
-            ) : (
-              sharedNotes.map((n) => <NoteCard key={n.id} note={n} isMine={n.user_id === user.id} />)
-            )}
-          </>
+          notes.map((n) => <NoteCard key={n.id} note={n} />)
         )}
 
-        {/* Modal simple */}
         {modalOpen && (
           <div className="modal-overlay">
             <div className="modal-card">
@@ -296,37 +168,30 @@ export default function Notes() {
                       rows={6}
                     />
                   </div>
-
-                  <div className="form-check mb-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="is_shared"
-                      checked={!!form.is_shared}
-                      onChange={(e) => setForm({ ...form, is_shared: e.target.checked })}
-                    />
-                    <label className="form-check-label" htmlFor="is_shared">
-                      Compartir nota (visible en la pestaña Compartidas)
-                    </label>
-                  </div>
                 </div>
 
-                <div className="modal-footer d-flex justify-content-end">
-                  <button type="button" className="btn btn-outline-secondary me-2" onClick={() => setModalOpen(false)}>
-                    Cancelar
-                  </button>
-                  <button type="submit" className="btn btn-purple" disabled={saving}>
-                    {saving ? "Guardando..." : editingNote ? "Actualizar" : "Crear"}
-                  </button>
+                <div className="modal-footer d-flex justify-content-between">
+                  {editingNote && (
+                    <button type="button" className="btn btn-outline-danger" onClick={() => deleteNote(editingNote)}>
+                      Eliminar
+                    </button>
+                  )}
+                  <div>
+                    <button type="button" className="btn btn-outline-secondary me-2" onClick={() => setModalOpen(false)}>
+                      Cancelar
+                    </button>
+                    <button type="submit" className="btn btn-purple" disabled={saving}>
+                      {saving ? "Guardando..." : editingNote ? "Actualizar" : "Crear"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
         )}
 
-        {/* Styles modal (inline here para que sea autoconclusivo) */}
         <style>{`
-          .note-card .card-body { gap: 12px; display: flex; }
+          .note-card:hover { background: #f9f9ff; }
           .btn-purple { background: #7a48e3; color: #fff; border: none; }
           .btn-purple:hover { background: #5a36b1; color: #fff; }
 
@@ -351,7 +216,6 @@ export default function Notes() {
           .modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
           .modal-body { padding: 18px 20px; }
           .modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; }
-          .badge.bg-purple { background: #7a48e3; color: white; }
         `}</style>
       </div>
     </div>
