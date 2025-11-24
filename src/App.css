@@ -7,7 +7,7 @@
 
 /* Fondo general */
 .login-page {
-  background-color: #f5f3f3;
+  background-color: #F7F7F7;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -18,7 +18,6 @@
   border-radius: 25px;
 }
 
-/* Gradiente morado (lado derecho) */
 .gradient-bg {
   background: radial-gradient(circle at top left, #b57cff, #7a48e3);
 }
@@ -34,7 +33,6 @@
   background-color: #5a36b1 !important;
 }
 
-/* Campos de texto */
 .form-control {
   border-radius: 10px;
   border: 1px solid #ddd;
@@ -47,7 +45,6 @@
   box-shadow: 0 0 5px rgba(122, 72, 227, 0.3);
 }
 
-/* Texto */
 h2, h3 {
   letter-spacing: 0.5px;
 }
@@ -103,18 +100,299 @@ h2, h3 {
   background-color: #f8f9fa;
 }
 
+/* ---------- Layout general ---------- */
+.dashboard-container {
+  min-height: 100vh;
+  background: #f7f7f7;
+  display: flex;
+}
 
-
-/* contenido principal */
+/* el contenido principal */
 .content {
-  background-color: #f8f9fa;
+  flex-grow: 1;
+  padding: 28px;
+  background: transparent;
 }
 
-/* tarjetas de proyectos */
-.project-card {
-  background: linear-gradient(135deg, #b587f3, #7948e3);
-  border-radius: 20px;
+/* ---------- PROYECTOS: grid full-width ---------- */
+.projects-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 8px;
 }
+
+.project-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(18, 23, 40, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  border: 1px solid rgba(18,23,40,0.04);
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(18, 23, 40, 0.06);
+}
+
+.project-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+.project-desc {
+  color: #666;
+  font-size: 0.92rem;
+  margin-bottom: 12px;
+  min-height: 44px;
+}
+
+.project-dates small {
+  display: block;
+  color: #444;
+  font-size: 0.88rem;
+}
+
+/* ---------- TARJETAS GENERALES ---------- */
+.dashboard-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(18, 23, 40, 0.04);
+  border: 1px solid rgba(18,23,40,0.04);
+}
+
+/* ---------- TAREAS ---------- */
+.task-item {
+  background: #fff;
+  padding: 14px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(18,23,40,0.03);
+  border: 1px solid rgba(18,23,40,0.03);
+}
+
+.task-title {
+  font-weight: 600;
+  color: #222;
+}
+
+.task-project {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.task-status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+/* estados */
+.status-pending {
+  background: #f1e6ff;
+  color: #6a3fb8;
+}
+
+/* ---------- CONTROL DE TIEMPO ---------- */
+.time-control-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-control-buttons {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.time-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(18,23,40,0.06);
+  transition: transform .12s ease, opacity .12s ease;
+}
+
+.time-btn.play {
+  background: linear-gradient(180deg,#c4bada,#bba6e6);
+  color: #7A48E3;
+}
+
+.time-btn.stop {
+  background: linear-gradient(180deg,#ffdfe0,#ffbfc2);
+  color: #872a2a;
+}
+
+.time-btn:hover {
+  transform: translateY(-3px);
+}
+
+.time-counter {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #222;
+}
+
+/* ---------- HISTORIAL (tabla) ---------- */
+.sessions-table-wrap {
+  overflow: auto;
+  border-radius: 10px;
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+  background: #fff;
+}
+
+.sessions-table thead th {
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 600;
+  background: #fff;
+  border-bottom: 1px solid #6b3ee0;
+}
+
+.sessions-table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #6b3ee0;
+  color: #444;
+  vertical-align: middle;
+}
+
+/* boton cargar más */
+.btn-outline-more {
+  border: 1px solid #7a48e3;
+  color: #7a48e3;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.btn-outline-more:hover {
+  background: #7a48e3;
+  color: white;
+  border: none;
+}
+/* ---------- SIDEBAR & MOBILE ---------- */
+/* sidebar - desktop */
+.sidebar {
+  width: 220px;
+  background: linear-gradient(180deg,#7a48e3,#6b3ee0);
+  color: white;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* keep existing menu-item styles from your App.css but ensure contrast for desktop */
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  color: white;
+}
+.menu-item.active {
+  background: #fff;
+  color: #7a48e3;
+  font-weight: 600;
+}
+
+/* Mobile bottom nav */
+.mobile-bottom-nav {
+  display: none;
+}
+
+/* ---------- RESPONSIVE (mobile) ---------- */
+@media (max-width: 991px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    display: none !important;
+  }
+
+  .desktop-sidebar {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 18px;
+    background: rgba(255,255,255,0.98);
+    padding: 8px 12px;
+    border-radius: 40px;
+    box-shadow: 0 8px 24px rgba(18,23,40,0.08);
+    align-items: center;
+    z-index: 60;
+  }
+
+  .mobile-nav-item {
+    display: inline-flex;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    text-decoration: none;
+  }
+
+  .mobile-nav-item.active {
+    background: linear-gradient(180deg,#7a48e3,#6b3ee0);
+    color: white;
+  }
+
+  /* projects: single column on small devices */
+  .projects-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* tasks full width in mobile, stacked under projects */
+  .task-item {
+    padding: 12px;
+  }
+
+  .sessions-table {
+    min-width: unset;
+  }
+
+}
+
+/* small niceties */
+.empty {
+  color: #666;
+  padding: 14px;
+  background: #fff;
+  border-radius: 10px;
+}
+
+
+
+/* Fin del contenido principal */
 
 .sidebar {
   background: #f9f9fb;
@@ -215,29 +493,88 @@ h2, h3 {
   background-color: #9d7eff;
 }
 
-.projects-scroll {
-  display: flex;
-  overflow-x: auto;
-  gap: 1rem;
-  width: 100%;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
-}
-.projects-scroll::-webkit-scrollbar {
-  height: 6px;
-}
-.projects-scroll::-webkit-scrollbar-thumb {
-  background: #ccc;
+/* detalles del proyecto */
+
+/* Animaciones */
+.animate-fade {
+  animation: fade 0.4s ease;
 }
 
-.project-card {
-  width: 300px; /* 👈 ancho fijo para todas */
-  background-color: #f6f4fc;
-  border-radius: 12px;
-  transition: box-shadow 0.2s ease;
-  flex-shrink: 0;
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.project-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+.animate-slide {
+  animation: slide 0.35s ease;
+}
+
+@keyframes slide {
+  from { transform: translateX(-8px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Drawer */
+.task-drawer {
+  position: fixed;
+  right: -380px;
+  top: 0;
+  width: 350px;
+  height: 100%;
+  background: #ffffff;
+  border-left: 2px solid #8758ff4a;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+  padding: 20px;
+  transition: right 0.3s ease;
+  z-index: 2000;
+}
+
+.task-drawer.open {
+  right: 0;
+}
+
+.drawer-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+/* Task row */
+.task-row {
+  padding: 12px;
+  border-bottom: 1px solid #f1f1f1;
+  transition: background-color 0.2s;
+}
+
+.task-row:hover {
+  background: #faf7ff;
+}
+
+/* Botón icono */
+.btn-icon {
+  border: none;
+  background: #efefef;
+  padding: 7px 10px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.btn-icon:hover {
+  background: #d8cbff;
+  color: #8758ff;
+}
+
+/* Botón morado */
+.btn-purple {
+  background: #8758ff;
+  color: white;
+  border-radius: 8px;
+}
+
+.btn-purple:hover {
+  background: #6d3dff;
+}
+
+/* Modal personalizado */
+.custom-modal .modal-dialog {
+  animation: fade 0.3s ease;
 }

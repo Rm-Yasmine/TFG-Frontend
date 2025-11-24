@@ -24,7 +24,6 @@ export default function Login() {
     <div className="login-page container-fluid d-flex align-items-center justify-content-center vh-100">
       <div className="login-card row shadow rounded-4 overflow-hidden">
         
-        {/* Panel Izquierdo - Login */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
           <h2 className="fw-bold mb-4 text-center">Iniciar sesión</h2>
           <form onSubmit={handleSubmit}>
@@ -59,7 +58,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Panel Derecho - Bienvenida */}
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-center gradient-bg text-white text-center p-5">
           <h3 className="fw-bold mb-3">¡Hola, bienvenida!</h3>
           <p className="mb-4 small">

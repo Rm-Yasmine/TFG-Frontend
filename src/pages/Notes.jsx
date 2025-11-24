@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import API from "../api/axios";
 import Menu from "../components/Menu";
 import "../App.css";
+import { Navigate } from "react-router-dom";
 
 export default function Notes() {
   const [user, setUser] = useState(null);
@@ -105,6 +106,19 @@ export default function Notes() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      await API.post("/logout");
+      localStorage.removeItem("token");
+      Navigate("/login");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (!user) return <p className="text-center mt-5">Cargando...</p>;
+
+
   function NoteCard({ note }) {
     return (
       <div className="card mb-3 shadow-sm note-card" onClick={() => openView(note)} style={{ cursor: "pointer" }}>
@@ -118,11 +132,9 @@ export default function Notes() {
     );
   }
 
-  if (loading) return <p className="text-center mt-5">Cargando notas...</p>;
-
   return (
     <div className="dashboard-container d-flex">
-      <Menu active="notas" />
+      <Menu active="notas" onLogout={handleLogout} />
       <div className="content flex-grow-1 p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>

@@ -46,13 +46,6 @@ export default function Projects() {
       <p className="text-muted small">{project.description}</p>
       <div className="mt-2 small d-flex justify-content-between">
         <span>{project.members?.length || 0} miembros</span>
-        <span>{project.progress}%</span>
-      </div>
-      <div className="progress mt-2" style={{ height: "6px" }}>
-        <div
-          className="progress-bar bg-purple"
-          style={{ width: `${project.progress}%` }}
-        />
       </div>
     </div>
   );
