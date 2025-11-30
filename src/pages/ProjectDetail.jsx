@@ -23,6 +23,9 @@ export default function ProjectDetail() {
   const [showAssign, setShowAssign] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [email, setEmail] = useState("");
+
   const [user, setUser] = useState(null);
 
   const fetchUser = async () => {
@@ -33,10 +36,10 @@ export default function ProjectDetail() {
       console.error("Error cargando usuario:", err);
     }
   };
+
   useEffect(() => {
     fetchUser();
     fetchProject();
-    // eslint-disable-next-line
   }, []);
 
   const fetchProject = async () => {
@@ -50,11 +53,6 @@ export default function ProjectDetail() {
     }
   };
 
-  useEffect(() => {
-    fetchProject();
-    // eslint-disable-next-line
-  }, []);
-
   const openDrawer = (task) => {
     setSelectedTask(task);
     setDrawerOpen(true);
@@ -62,15 +60,40 @@ export default function ProjectDetail() {
 
   const refresh = () => fetchProject();
 
+  const addMember = async () => {
+    try {
+      const { data } = await API.post(`/projects/${id}/add-member-by-email`, {
+        email,
+      });
+
+      if (data.status === "success") {
+        setEmail("");
+        setShowAddMember(false);
+        fetchProject();
+      }
+    } catch (e) {
+      console.error("Error añadiendo miembro:", e);
+    }
+  };
+
   if (!project) return <p className="text-center mt-5">Cargando...</p>;
 
   return (
     <div className="project-detail-container d-flex">
-      <Menu active="projects" />
+      <Menu active="proyectos"  />
 
-      {/* CONTENIDO */}
       <div className="content flex-grow-1 p-4 animate-fade">
-        <h2 className="fw-bold">{project.title}</h2>
+        <div className="d-flex justify-content-between align-items-center">
+          <h2 className="fw-bold">{project.title}</h2>
+
+          <button
+            className="btn-add-member"
+            onClick={() => setShowAddMember(true)}
+          >
+            + Añadir Miembro
+          </button>
+        </div>
+
         <p className="text-muted">{project.description}</p>
 
         <button
@@ -80,7 +103,6 @@ export default function ProjectDetail() {
           + Nueva Tarea
         </button>
 
-        {/* TABLA DE TAREAS */}
         <div className="task-table card shadow-sm border-0">
           <div className="card-body">
             {project.tasks.length > 0 ? (
@@ -106,19 +128,19 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* DRAWER A LA DERECHA */}
+      {/* DRAWER DERECHA */}
       <TaskDrawer
         open={drawerOpen}
         task={selectedTask}
         onClose={() => setDrawerOpen(false)}
       />
 
-      {/* MODALES */}
+      {/* MODALES EXISTENTES */}
       <ModalCreateTask
         show={showCreate}
         onHide={() => setShowCreate(false)}
         projectId={project.id}
-        userId={user?.id} 
+        userId={user?.id}
         onSuccess={refresh}
       />
 
@@ -135,6 +157,36 @@ export default function ProjectDetail() {
         task={selectedTask}
         onSuccess={refresh}
       />
+
+      {/* NUEVO MODAL AÑADIR MIEMBRO */}
+      {showAddMember && (
+        <div className="modal-backdrop-custom">
+          <div className="modal-custom card p-4 shadow-lg">
+            <h4 className="mb-3">Añadir miembro</h4>
+
+            <input
+              type="email"
+              className="form-control mb-3"
+              placeholder="Correo del usuario"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <div className="d-flex justify-content-end gap-2">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowAddMember(false)}
+              >
+                Cancelar
+              </button>
+
+              <button className="btn btn-primary" onClick={addMember}>
+                Añadir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

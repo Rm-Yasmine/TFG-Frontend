@@ -6,12 +6,14 @@ export default function TaskRow({ task, onOpen, onEdit, onAssign }) {
     <div className="task-row d-flex justify-content-between align-items-center animate-slide">
       <div>
         <span className="fw-semibold">{task.title}</span>
-        <div className="small text-muted">{task.description}</div>
+        <br />
+        <span className="text-muted small">Fecha límite: {task.due_date}</span>
       </div>
 
-      <TaskStatusBadge status={task.status} />
-
       <div className="d-flex gap-2">
+        <div className="task-status-badge-container">
+        <TaskStatusBadge status={task.status} className="task-status-badge" />
+        </div>
         <button className="btn-icon" onClick={onOpen}>
           <FaEye />
         </button>

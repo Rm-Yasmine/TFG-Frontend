@@ -13,8 +13,6 @@ export default function Projects() {
     description: "",
     start_date: "",
     end_date: "",
-    tasks: [],
-    members: [],
   });
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -50,31 +48,14 @@ export default function Projects() {
     </div>
   );
 
-  // Abrir modal
   function openModal() {
     setForm({
       title: "",
       description: "",
       start_date: "",
       end_date: "",
-      tasks: [],
-      members: [],
     });
     setModalOpen(true);
-  }
-
-  function addTask() {
-    setForm((prev) => ({
-      ...prev,
-      tasks: [...prev.tasks, { title: "", description: "", due_date: "" }],
-    }));
-  }
-
-  function addMember() {
-    setForm((prev) => ({
-      ...prev,
-      members: [...prev.members, ""],
-    }));
   }
 
   async function saveProject(e) {
@@ -85,7 +66,9 @@ export default function Projects() {
         ...form,
         owner_id: user.id,
       };
+
       const res = await API.post("/projects", payload);
+
       if (res.data?.status === "success") {
         const { data } = await API.get("/projects");
         setOwnProjects(data.data.own || []);
@@ -105,6 +88,7 @@ export default function Projects() {
   return (
     <div className="dashboard-container d-flex">
       <Menu active="proyectos" />
+
       <div className="content flex-grow-1 p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h3 className="fw-bold">Proyectos</h3>
@@ -170,6 +154,7 @@ export default function Projects() {
                         }
                       />
                     </div>
+
                     <div className="col">
                       <label className="form-label">Fin</label>
                       <input
@@ -181,75 +166,6 @@ export default function Projects() {
                         }
                       />
                     </div>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Tareas</label>
-                    {form.tasks.map((task, i) => (
-                      <div key={i} className="border rounded p-2 mb-2">
-                        <input
-                          className="form-control mb-1"
-                          placeholder="Título"
-                          value={task.title}
-                          onChange={(e) => {
-                            const updated = [...form.tasks];
-                            updated[i].title = e.target.value;
-                            setForm({ ...form, tasks: updated });
-                          }}
-                        />
-                        <textarea
-                          className="form-control mb-1"
-                          placeholder="Descripción"
-                          value={task.description}
-                          onChange={(e) => {
-                            const updated = [...form.tasks];
-                            updated[i].description = e.target.value;
-                            setForm({ ...form, tasks: updated });
-                          }}
-                        />
-                        <input
-                          type="date"
-                          className="form-control"
-                          value={task.due_date}
-                          onChange={(e) => {
-                            const updated = [...form.tasks];
-                            updated[i].due_date = e.target.value;
-                            setForm({ ...form, tasks: updated });
-                          }}
-                        />
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={addTask}
-                    >
-                      + Añadir tarea
-                    </button>
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Miembros</label>
-                    {form.members.map((m, i) => (
-                      <input
-                        key={i}
-                        className="form-control mb-1"
-                        placeholder="Email o nombre"
-                        value={m}
-                        onChange={(e) => {
-                          const updated = [...form.members];
-                          updated[i] = e.target.value;
-                          setForm({ ...form, members: updated });
-                        }}
-                      />
-                    ))}
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={addMember}
-                    >
-                      + Añadir miembro
-                    </button>
                   </div>
                 </div>
 
@@ -267,39 +183,51 @@ export default function Projects() {
           </div>
         )}
 
+        {/* Estilos */}
         <style>{`
-          .btn-purple { background: #7a48e3; color: #fff; border: none; }
-          .btn-purple:hover { background: #5a36b1; color: #fff; }
+          .btn-purple { 
+            background: #7a48e3; 
+            color: #fff; 
+            border: none; 
+            padding: 8px 16px;
+            border-radius: 6px;
+          }
+          .btn-purple:hover { background: #6233d4; }
+
+          .text-purple { color: #7a48e3; }
+
           .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15,15,20,0.45);
+            background: rgba(0,0,0,0.45);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1200;  
+            z-index: 1200;
           }
           .modal-card {
-            background: #fff; 
-            border-radius: 8px; 
-            width: 90%; 
-            max-width: 700px; 
-            max-height: 90vh; 
-            overflow-y: auto;
-            display: flex;    
-            flex-direction: column;
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 650px;
+            overflow: hidden;
+            animation: fadeIn 0.25s ease-out;
           }
-          .modal-header, .modal-footer {    
-            padding: 16px;    
-            border-bottom: 1px solid #eee;  
+          .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid #eee;
           }
-          .modal-footer {    
-            border-top: none;  
+          .modal-body {
+            padding: 16px;
           }
-          .modal-body {    
-            padding: 16px;    
-            flex-grow: 1; 
-            overflow-y: auto;  
+          .modal-footer {
+            border-top: 1px solid #eee;
+            padding: 16px;
+          }
+
+          @keyframes fadeIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
           }
         `}</style>
       </div>

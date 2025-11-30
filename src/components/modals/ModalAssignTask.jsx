@@ -41,8 +41,8 @@ export default function ModalAssignTask({ show, onHide, task, onSuccess }) {
   if (!show) return null;
 
   return (
-    <div className="modal fade show custom-modal" style={{ display: "block" }}>
-      <div className="modal-dialog">
+    <div className=" modal-backdrop-custom modal fade show custom-modal" style={{ display: "block" }}>
+      <div className="modal-dialog modal-custom">
         <div className="modal-content animate-fade">
           <div className="modal-header">
             <h5 className="modal-title">Asignar tarea</h5>

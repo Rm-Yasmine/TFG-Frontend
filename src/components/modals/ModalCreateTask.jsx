@@ -80,8 +80,8 @@ export default function ModalCreateTask({
   if (!show) return null;
 
   return (
-    <div className="modal fade show custom-modal" style={{ display: "block" }}>
-      <div className="modal-dialog">
+    <div className="modal-backdrop-custom modal fade show custom-modal" style={{ display: "block" }}>
+      <div className="modal-custom modal-dialog">
         <div className="modal-content animate-fade">
           <div className="modal-header">
             <h5 className="modal-title">Nueva Tarea</h5>

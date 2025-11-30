@@ -36,8 +36,8 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
   };
 
   return (
-    <div className="modal fade show custom-modal" style={{ display: "block" }}>
-      <div className="modal-dialog">
+    <div className="modal-backdrop-custom modal fade show custom-modal" style={{ display: "block" }}>
+      <div className="modal-custom modal-dialog">
         <div className="modal-content animate-fade">
           <div className="modal-header">
             <h5 className="modal-title">Editar tarea</h5>
