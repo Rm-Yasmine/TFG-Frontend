@@ -3,22 +3,33 @@ import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 export default function ResetPassword() {
-  const [step, setStep] = useState(1); // 1 = pedir email, 2 = cambiar contraseña
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({ password: "" });
 
   const navigate = useNavigate();
+
+  const validatePassword = (pwd) => {
+    const regex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    setErrors({
+      password: regex.test(pwd)
+        ? ""
+        : "Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo",
+    });
+  };
 
   const handleRequestReset = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data } = await API.post("/request-reset", { email });
+      const { data } = await API.post("/password/request", { email });
 
       setToken(data.token); 
       setMessage({ type: "success", text: data.message });
@@ -35,10 +46,21 @@ export default function ResetPassword() {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
+
+    if (errors.password) {
+      setMessage({ type: "error", text: "Corrige la contraseña antes de continuar" });
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      setMessage({ type: "error", text: "Las contraseñas no coinciden" });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { data } = await API.post("/reset-password", {
+      const { data } = await API.post("/password/reset", {
         email,
         token,
         password,
@@ -93,12 +115,19 @@ export default function ResetPassword() {
           <form onSubmit={handleResetPassword}>
             <input
               type="password"
-              className="form-control mb-3"
+              className="form-control mb-1"
               placeholder="Nueva contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validatePassword(e.target.value);
+              }}
               required
             />
+            {errors.password && (
+              <small className="text-danger">{errors.password}</small>
+            )}
+
             <input
               type="password"
               className="form-control mb-3"
@@ -107,6 +136,7 @@ export default function ResetPassword() {
               onChange={(e) => setPasswordConfirm(e.target.value)}
               required
             />
+
             <button className="btn btn-success w-100" disabled={loading}>
               {loading ? "Actualizando..." : "CAMBIAR CONTRASEÑA"}
             </button>
