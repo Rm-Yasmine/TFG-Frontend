@@ -57,7 +57,7 @@ export default function Register() {
         localStorage.setItem("token", data.token);
       }
 
-      setTimeout(() => navigate("/login"), 2000); // redirige después de 2s
+      setTimeout(() => navigate("/"), 2000); 
     } catch (error) {
       console.error(error);
       setMessage({
