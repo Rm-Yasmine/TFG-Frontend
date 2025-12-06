@@ -5,8 +5,6 @@ import "../App.css";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [verificationStep, setVerificationStep] = useState(false);
-  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -14,49 +12,27 @@ export default function Register() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ✅ PASO 1: REGISTRAR + ENVIAR PIN DESDE LARAVEL
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await API.post("/register", form);
+      const { data } = await API.post("/register", form);
 
-      alert("Hemos enviado un código a tu correo ✅");
-      setVerificationStep(true);
+      alert("Cuenta creada correctamente 🎉");
+
+      // Si tu backend devuelve token, puedes guardarlo
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      // Redirigir al login o home
+      navigate("/login");
     } catch (error) {
       console.error(error);
       alert(
         error.response?.data?.message ||
-        "Error al enviar el código"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ PASO 2: VERIFICAR PIN Y CREAR CUENTA
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { data } = await API.post("/verify-pin", {
-        email: form.email,
-        pin: pin,
-      });
-
-      alert("Cuenta verificada y creada correctamente 🎉");
-
-      // Guardar token si lo usas
-      localStorage.setItem("token", data.data.token);
-
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-      alert(
-        error.response?.data?.message ||
-        "Código incorrecto"
+        "Error al registrarte. Verifica tus datos."
       );
     } finally {
       setLoading(false);
@@ -73,7 +49,7 @@ export default function Register() {
           <p className="mb-4 small">Tu espacio creativo te espera.</p>
           <button
             className="btn btn-light px-4 fw-semibold"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
           >
             ENTRAR
           </button>
@@ -81,69 +57,39 @@ export default function Register() {
 
         {/* DERECHA */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
+          <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
 
-          {!verificationStep ? (
-            <>
-              <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
+          <form onSubmit={handleSubmit}>
+            <input
+              className="form-control mb-3 py-2"
+              name="name"
+              placeholder="Nombre"
+              onChange={handleChange}
+              required
+            />
 
-              <form onSubmit={handleSubmit}>
-                <input
-                  className="form-control mb-3 py-2"
-                  name="name"
-                  placeholder="Nombre"
-                  onChange={handleChange}
-                  required
-                />
+            <input
+              className="form-control mb-3 py-2"
+              name="email"
+              type="email"
+              placeholder="Correo electrónico"
+              onChange={handleChange}
+              required
+            />
 
-                <input
-                  className="form-control mb-3 py-2"
-                  name="email"
-                  type="email"
-                  placeholder="Correo electrónico"
-                  onChange={handleChange}
-                  required
-                />
+            <input
+              className="form-control mb-3 py-2"
+              name="password"
+              type="password"
+              placeholder="Contraseña"
+              onChange={handleChange}
+              required
+            />
 
-                <input
-                  className="form-control mb-3 py-2"
-                  name="password"
-                  type="password"
-                  placeholder="Contraseña"
-                  onChange={handleChange}
-                  required
-                />
-
-                <button className="btn btn-primary w-100 py-2" disabled={loading}>
-                  {loading ? "Enviando código..." : "REGISTRARSE"}
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <h2 className="fw-bold mb-4 text-center">Verifica tu correo</h2>
-
-              <p className="text-muted text-center mb-3">
-                Hemos enviado un PIN a <strong>{form.email}</strong>
-              </p>
-
-              <form onSubmit={handleVerify}>
-                <input
-                  className="form-control mb-3 py-2 text-center"
-                  type="text"
-                  maxLength="6"
-                  placeholder="Código de verificación"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  required
-                />
-
-                <button className="btn btn-success w-100 py-2" disabled={loading}>
-                  {loading ? "Verificando..." : "VERIFICAR Y CREAR CUENTA"}
-                </button>
-              </form>
-            </>
-          )}
-
+            <button className="btn btn-primary w-100 py-2" disabled={loading}>
+              {loading ? "Registrando..." : "REGISTRARSE"}
+            </button>
+          </form>
         </div>
       </div>
     </div>
