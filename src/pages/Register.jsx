@@ -14,29 +14,28 @@ export default function Register() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ✅ PASO 1: REGISTRO → ENVÍA PIN DESDE LARAVEL
+  // ✅ PASO 1: REGISTRAR + ENVIAR PIN DESDE LARAVEL
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data } = await API.post("/register", form);
+      await API.post("/register", form);
 
-      if (data.status === "success") {
-        setVerificationStep(true);
-        alert("Hemos enviado un PIN a tu correo 📩");
-      }
-    } catch (err) {
-      console.error(err);
+      alert("Hemos enviado un código a tu correo ✅");
+      setVerificationStep(true);
+    } catch (error) {
+      console.error(error);
       alert(
-        err.response?.data?.message || "Error al enviar el código de verificación"
+        error.response?.data?.message ||
+        "Error al enviar el código"
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ PASO 2: VERIFICAR PIN Y CREAR USUARIO
+  // ✅ PASO 2: VERIFICAR PIN Y CREAR CUENTA
   const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -47,17 +46,18 @@ export default function Register() {
         pin: pin,
       });
 
-      if (data.status === "success") {
-        alert("Cuenta verificada y creada con éxito 🎉");
+      alert("Cuenta verificada y creada correctamente 🎉");
 
-        // Guardar token si quieres:
-        localStorage.setItem("token", data.data.token);
+      // Guardar token si lo usas
+      localStorage.setItem("token", data.data.token);
 
-        navigate("/");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Código incorrecto o expirado ❌");
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      alert(
+        error.response?.data?.message ||
+        "Código incorrecto"
+      );
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export default function Register() {
     <div className="login-page container-fluid d-flex align-items-center justify-content-center vh-100">
       <div className="login-card row shadow rounded-4 overflow-hidden">
 
-        {/* Panel Izquierdo */}
+        {/* IZQUIERDA */}
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-center gradient-bg text-white text-center p-5">
           <h3 className="fw-bold mb-3">¡Bienvenida de nuevo!</h3>
           <p className="mb-4 small">Tu espacio creativo te espera.</p>
@@ -79,7 +79,7 @@ export default function Register() {
           </button>
         </div>
 
-        {/* Panel Derecho */}
+        {/* DERECHA */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
 
           {!verificationStep ? (
@@ -113,21 +113,17 @@ export default function Register() {
                   required
                 />
 
-                <button
-                  className="btn btn-primary w-100 py-2"
-                  disabled={loading}
-                  type="submit"
-                >
-                  {loading ? "Enviando..." : "REGISTRARSE"}
+                <button className="btn btn-primary w-100 py-2" disabled={loading}>
+                  {loading ? "Enviando código..." : "REGISTRARSE"}
                 </button>
               </form>
             </>
           ) : (
             <>
               <h2 className="fw-bold mb-4 text-center">Verifica tu correo</h2>
+
               <p className="text-muted text-center mb-3">
-                Hemos enviado un PIN de 6 dígitos a: <br />
-                <strong>{form.email}</strong>
+                Hemos enviado un PIN a <strong>{form.email}</strong>
               </p>
 
               <form onSubmit={handleVerify}>
@@ -141,11 +137,7 @@ export default function Register() {
                   required
                 />
 
-                <button
-                  className="btn btn-success w-100 py-2"
-                  disabled={loading}
-                  type="submit"
-                >
+                <button className="btn btn-success w-100 py-2" disabled={loading}>
                   {loading ? "Verificando..." : "VERIFICAR Y CREAR CUENTA"}
                 </button>
               </form>
