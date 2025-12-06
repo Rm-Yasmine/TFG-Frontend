@@ -6,62 +6,47 @@ import "../App.css";
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [verificationStep, setVerificationStep] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [generatedCode, setGeneratedCode] = useState("");
+  const [pin, setPin] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  // ✅ PASO 1 → REGISTRO + ENVÍO DEL PIN (Laravel)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // 1️⃣ Generar PIN antes de registrar
-      const pin = String(Math.floor(100000 + Math.random() * 900000));
-      setGeneratedCode(pin);
+      await API.post("/register", form);
 
-      // 2️⃣ Enviar PIN por correo con Web3Forms
-      await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          access_key: "2385030c-4596-438b-a457-79b0627a5479",
-          email: form.email,
-          subject: "Tu código de verificación",
-          message: `Tu código de verificación es: ${pin}`,
-        }),
-      });
-
-      console.log("PIN enviado:", pin);
-
-      // 3️⃣ Pasamos al paso de verificación
       setVerificationStep(true);
 
-      alert(`Hemos enviado un PIN a ${form.email}`);
+      alert(`Hemos enviado un código a ${form.email}`);
     } catch (err) {
       console.error(err);
-      alert("Error enviando el correo.");
+      alert("Error al enviar el código");
     }
   };
 
+  // ✅ PASO 2 → VERIFICAR PIN + CREAR USUARIO DEFINITIVO
   const handleVerify = async (e) => {
     e.preventDefault();
 
-    if (verificationCode !== generatedCode) {
-      alert("Código incorrecto.");
-      return;
-    }
-
     try {
-      // 4️⃣ Ahora sí: registrar al usuario
-      await API.post("/register", form);
+      const { data } = await API.post("/verify-pin", {
+        email: form.email,
+        pin: pin,
+      });
 
-      alert("Correo verificado y cuenta creada 🎉");
+      alert("Cuenta creada correctamente 🎉");
+
+      // ✅ Guardar token si quieres
+      localStorage.setItem("token", data.data.token);
+
       navigate("/");
     } catch (err) {
       console.error(err);
-      alert("Error al crear tu cuenta.");
+      alert("Código incorrecto o expirado");
     }
   };
 
@@ -84,6 +69,7 @@ export default function Register() {
         {/* Panel Derecho */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
 
+          {/* ✅ FORMULARIO DE REGISTRO */}
           {!verificationStep ? (
             <>
               <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
@@ -118,9 +104,10 @@ export default function Register() {
             </>
           ) : (
             <>
+              {/* ✅ FORMULARIO DE VERIFICACIÓN */}
               <h2 className="fw-bold mb-4 text-center">Verifica tu correo</h2>
               <p className="text-muted text-center mb-3">
-                Hemos enviado un PIN de 6 dígitos a <strong>{form.email}</strong>.
+                Introduce el código enviado a <strong>{form.email}</strong>
               </p>
 
               <form onSubmit={handleVerify}>
@@ -129,8 +116,8 @@ export default function Register() {
                   type="text"
                   maxLength="6"
                   placeholder="Código de verificación"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
                   required
                 />
                 <button className="btn btn-success w-100 py-2">
