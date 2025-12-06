@@ -12,23 +12,22 @@ export default function Register() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ✅ PASO 1 → REGISTRO + ENVÍO DEL PIN (Laravel)
+  // ✅ PASO 1 → Enviar datos a /register (Laravel envía el PIN)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       await API.post("/register", form);
 
-      setVerificationStep(true);
-
-      alert(`Hemos enviado un código a ${form.email}`);
+      alert("Hemos enviado un código a tu correo 📩");
+      setVerificationStep(true); // Pasamos al paso del PIN
     } catch (err) {
       console.error(err);
-      alert("Error al enviar el código");
+      alert("Error al enviar el código. Revisa los datos.");
     }
   };
 
-  // ✅ PASO 2 → VERIFICAR PIN + CREAR USUARIO DEFINITIVO
+  // ✅ PASO 2 → Verificar PIN y crear usuario definitivo
   const handleVerify = async (e) => {
     e.preventDefault();
 
@@ -38,15 +37,11 @@ export default function Register() {
         pin: pin,
       });
 
-      alert("Cuenta creada correctamente 🎉");
-
-      // ✅ Guardar token si quieres
-      localStorage.setItem("token", data.data.token);
-
-      navigate("/");
+      alert("Cuenta verificada y creada correctamente 🎉");
+      navigate("/"); // Redirigir a login o home
     } catch (err) {
       console.error(err);
-      alert("Código incorrecto o expirado");
+      alert("PIN incorrecto o expirado.");
     }
   };
 
@@ -54,7 +49,7 @@ export default function Register() {
     <div className="login-page container-fluid d-flex align-items-center justify-content-center vh-100">
       <div className="login-card row shadow rounded-4 overflow-hidden">
 
-        {/* Panel Izquierdo */}
+        {/* PANEL IZQUIERDO */}
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-center gradient-bg text-white text-center p-5">
           <h3 className="fw-bold mb-3">¡Bienvenida de nuevo!</h3>
           <p className="mb-4 small">Tu espacio creativo te espera.</p>
@@ -66,13 +61,14 @@ export default function Register() {
           </button>
         </div>
 
-        {/* Panel Derecho */}
+        {/* PANEL DERECHO */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
 
-          {/* ✅ FORMULARIO DE REGISTRO */}
+          {/* ================= REGISTRO NORMAL ================= */}
           {!verificationStep ? (
             <>
               <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
+
               <form onSubmit={handleSubmit}>
                 <input
                   className="form-control mb-3 py-2"
@@ -81,6 +77,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                 />
+
                 <input
                   className="form-control mb-3 py-2"
                   name="email"
@@ -89,6 +86,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                 />
+
                 <input
                   className="form-control mb-3 py-2"
                   name="password"
@@ -97,17 +95,19 @@ export default function Register() {
                   onChange={handleChange}
                   required
                 />
-                <button className="btn btn-primary w-100 py-2">
+
+                <button type="submit" className="btn btn-primary w-100 py-2">
                   REGISTRARSE
                 </button>
               </form>
             </>
           ) : (
+            /* ================= VERIFICACIÓN PIN ================= */
             <>
-              {/* ✅ FORMULARIO DE VERIFICACIÓN */}
               <h2 className="fw-bold mb-4 text-center">Verifica tu correo</h2>
+
               <p className="text-muted text-center mb-3">
-                Introduce el código enviado a <strong>{form.email}</strong>
+                Hemos enviado un PIN a <strong>{form.email}</strong>
               </p>
 
               <form onSubmit={handleVerify}>
@@ -120,7 +120,8 @@ export default function Register() {
                   onChange={(e) => setPin(e.target.value)}
                   required
                 />
-                <button className="btn btn-success w-100 py-2">
+
+                <button type="submit" className="btn btn-success w-100 py-2">
                   VERIFICAR Y CREAR CUENTA
                 </button>
               </form>
