@@ -51,7 +51,7 @@ export default function Login() {
             <span
               className="text-decoration-none text-primary fw-semibold"
               style={{ cursor: 'pointer' }}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/resetpass')}
             >
               Restablecer contraseña
             </span>
