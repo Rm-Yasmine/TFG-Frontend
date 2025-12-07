@@ -5,6 +5,7 @@ import {
   FaFolderOpen,
   FaCalendarAlt,
   FaStickyNote,
+  FaClock,      
   FaSignOutAlt,
 } from "react-icons/fa";
 import logo from "../assets/logo_web.svg";
@@ -18,11 +19,11 @@ export default function Menu({ onLogout, active = "inicio" }) {
     { name: "Proyectos", path: "/projects", icon: <FaFolderOpen /> },
     { name: "Calendario", path: "/calendar", icon: <FaCalendarAlt /> },
     { name: "Notas", path: "/notes", icon: <FaStickyNote /> },
+    { name: "Tiempo", path: "/tiempo", icon: <FaClock /> }, // 🔥 nueva opción
   ];
 
   return (
     <>
-      {/* Sidebar for desktop */}
       <div className="sidebar d-flex flex-column justify-content-between p-4 desktop-sidebar">
         <div>
           <div className="logo-container mb-4 text-center">
@@ -34,7 +35,9 @@ export default function Menu({ onLogout, active = "inicio" }) {
 
           <div className="flex-grow-1">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path || active.toLowerCase() === item.name.toLowerCase();
+              const isActive =
+                location.pathname === item.path ||
+                active.toLowerCase() === item.name.toLowerCase();
               return (
                 <Link
                   key={item.name}
@@ -60,10 +63,11 @@ export default function Menu({ onLogout, active = "inicio" }) {
         </button>
       </div>
 
-      {/* Bottom nav for mobile */}
       <nav className="mobile-bottom-nav">
         {menuItems.map((item) => {
-          const isActive = location.pathname === item.path || active.toLowerCase() === item.name.toLowerCase();
+          const isActive =
+            location.pathname === item.path ||
+            active.toLowerCase() === item.name.toLowerCase();
           return (
             <Link
               key={item.name}
