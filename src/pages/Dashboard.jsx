@@ -11,10 +11,14 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [activeSessionId, setActiveSessionId] = useState(null);
-  const [liveTime, setLiveTime] = useState("00:00:00");
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [sessions, setSessions] = useState([]);
 
+  const [visibleSessions, setVisibleSessions] = useState(5);
+  const [showAll, setShowAll] = useState(false);
+
+  const [liveTime, setLiveTime] = useState("00:00:00");
   const timerRef = useRef(null);
+
   const navigate = useNavigate();
 
   const toLocal = (dateString) => {
@@ -22,11 +26,23 @@ export default function Dashboard() {
     return new Date(dateString + " UTC");
   };
 
+  
   useEffect(() => {
     fetchUser();
     return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const active = sessions.find((s) => !s.end_time);
+    if (active) {
+      setActiveSessionId(active.id);
+      startLiveTimer(active.start_time);
+    } else {
+      setActiveSessionId(null);
+      stopLiveTimer();
+      setLiveTime("00:00:00");
+    }
+  }, [sessions]);
 
   const fetchUser = async () => {
     try {
@@ -34,6 +50,7 @@ export default function Dashboard() {
       setUser(data.data);
       await fetchProjects();
       await fetchTasks(data.data.id);
+      await fetchSessions();
     } catch {
       navigate("/login");
     }
@@ -61,19 +78,65 @@ export default function Dashboard() {
     }
   };
 
-  const formatDuration = (start) => {
-    if (!start) return "00:00:00";
+  const fetchSessions = async () => {
+    try {
+      const { data } = await API.get("/time-sessions");
+      if (data.status === "success") {
+        const list = (data.data || []).sort(
+          (a, b) => new Date(b.start_time) - new Date(a.start_time)
+        );
+        setSessions(list);
+      }
+    } catch (error) {
+      console.error("Error sesiones:", error);
+    }
+  };
+
+
+  const startSession = async () => {
+    if (!selectedProjectId) return alert("Selecciona un proyecto");
+
+    try {
+      const { data } = await API.post("/time-sessions/start", {
+        project_id: selectedProjectId,
+      });
+
+      setActiveSessionId(data.data.id);
+      await fetchSessions();
+    } catch (err) {
+      console.error("Error iniciando:", err);
+    }
+  };
+
+  const stopSession = async () => {
+    if (!activeSessionId) return;
+
+    try {
+      await API.post("/time-sessions/stop", { session_id: activeSessionId });
+      setActiveSessionId(null);
+      await fetchSessions();
+    } catch (err) {
+      console.error("Error deteniendo:", err);
+    }
+  };
+
+  const formatDuration = (start, end) => {
+    if (!start) return "--";
+
     const a = toLocal(start).getTime();
-    const diff = Math.max(0, Math.floor((Date.now() - a) / 1000));
+    const b = end ? toLocal(end).getTime() : Date.now();
+
+    const diff = Math.max(0, Math.floor((b - a) / 1000));
     const h = String(Math.floor(diff / 3600)).padStart(2, "0");
     const m = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
     const s = String(diff % 60).padStart(2, "0");
+
     return `${h}:${m}:${s}`;
   };
 
   const startLiveTimer = (startTime) => {
     stopLiveTimer();
-    const update = () => setLiveTime(formatDuration(startTime));
+    const update = () => setLiveTime(formatDuration(startTime, null));
     update();
     timerRef.current = setInterval(update, 1000);
   };
@@ -85,35 +148,14 @@ export default function Dashboard() {
     }
   };
 
-  const startSession = async () => {
-    if (!selectedProjectId) {
-      setMessage({ type: "error", text: "Selecciona un proyecto primero" });
-      return;
-    }
-    try {
-      const { data } = await API.post("/time-sessions/start", {
-        project_id: selectedProjectId,
-      });
-      setActiveSessionId(data.data.id);
-      startLiveTimer(data.data.start_time);
-      setMessage({ type: "success", text: "Sesión iniciada 🎉" });
-    } catch (err) {
-      console.error("Error iniciando:", err);
-      setMessage({ type: "error", text: "Error al iniciar sesión" });
-    }
-  };
 
-  const stopSession = async () => {
-    if (!activeSessionId) return;
-    try {
-      await API.post("/time-sessions/stop", { session_id: activeSessionId });
-      setActiveSessionId(null);
-      stopLiveTimer();
-      setLiveTime("00:00:00");
-      setMessage({ type: "success", text: "Sesión detenida ✅" });
-    } catch (err) {
-      console.error("Error deteniendo:", err);
-      setMessage({ type: "error", text: "Error al detener sesión" });
+  const toggleSessions = () => {
+    if (showAll) {
+      setVisibleSessions(5);
+      setShowAll(false);
+    } else {
+      setVisibleSessions(sessions.length);
+      setShowAll(true);
     }
   };
 
@@ -133,99 +175,104 @@ export default function Dashboard() {
     <div className="dashboard-container d-flex page-enter">
       <Menu active="inicio" onLogout={handleLogout} />
 
-      <div className="content flex-grow-1 p-3">
-        <h2 className="fw-bold mb-3">Bienvenida, {user.name}</h2>
+      <div className="content flex-grow-1 p-4">
+        <h2 className="fw-bold mb-4">Bienvenida, {user.name}</h2>
 
-        {message.text && (
-          <div
-            className={`alert ${
-              message.type === "success" ? "alert-success" : "alert-danger"
-            } text-center fw-semibold`}
-          >
-            {message.text}
+        {/* PROYECTOS */}
+        <h5 className="fw-semibold mb-3">Proyectos recientes</h5>
+        <div className="projects-container mb-4">
+          {projects.slice(0, 4).map((project) => (
+            <div className="project-card" key={project.id}>
+              <div className="project-header">
+                <h5 className="project-title">{project.title}</h5>
+              </div>
+
+              <p className="project-desc">
+                {project.description || "Sin descripción"}
+              </p>
+
+              <div className="project-dates">
+                <small>
+                  <strong>Fin:</strong>{" "}
+                  {project.end_date
+                    ? toLocal(project.end_date).toLocaleDateString()
+                    : "--"}
+                </small>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="row g-4">
+          {/* TAREAS */}
+          <div className="col-md-7">
+            <div className="card dashboard-card p-3">
+              <h5 className="fw-semibold mb-3">Mis tareas asignadas</h5>
+
+              {tasks.length === 0 && (
+                <p className="text-muted">No tienes tareas asignadas.</p>
+              )}
+
+              {tasks.map((task) => (
+                <div className="task-item" key={task.id}>
+                  <div>
+                    <div className="task-title">{task.title}</div>
+                    <div className="task-project">
+                      Proyecto: {task.project?.title || "Sin proyecto"}
+                    </div>
+                  </div>
+                  <span
+                    className={`task-status ${
+                      task.status === "COMPLETED"
+                        ? "status-completed"
+                        : task.status === "IN_PROGRESS"
+                        ? "status-progress"
+                        : "status-pending"
+                    }`}
+                  >
+                    {task.status}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        <h5 className="fw-semibold mb-2">Proyectos</h5>
-        <div className="list-group mb-4">
-          {projects.slice(0, 5).map((project) => (
-            <div
-              className="list-group-item d-flex justify-content-between align-items-center small-card"
-              key={project.id}
-            >
-              <div>
-                <strong>{project.title}</strong>
-                <div className="text-muted small">
-                  {project.description || "Sin descripción"}
-                </div>
-              </div>
-              <small>
-                Fin:{" "}
-                {project.end_date
-                  ? toLocal(project.end_date).toLocaleDateString()
-                  : "--"}
-              </small>
-            </div>
-          ))}
-        </div>
+          {/* CONTROL DE TIEMPO */}
+          <div className="col-md-5">
+            <div className="card dashboard-card p-3">
+              <h5 className="fw-semibold mb-3">Control de tiempo</h5>
 
-        <h5 className="fw-semibold mb-2">Mis tareas</h5>
-        <div className="list-group mb-4">
-          {tasks.length === 0 && (
-            <p className="text-muted">No tienes tareas asignadas.</p>
-          )}
-          {tasks.map((task) => (
-            <div
-              className="list-group-item d-flex justify-content-between align-items-center small-card"
-              key={task.id}
-            >
-              <div>
-                <strong>{task.title}</strong>
-                <div className="text-muted small">
-                  Proyecto: {task.project?.title || "Sin proyecto"}
-                </div>
-              </div>
-              <span
-                className={`badge ${
-                  task.status === "COMPLETED"
-                    ? "bg-success"
-                    : task.status === "IN_PROGRESS"
-                    ? "bg-warning text-dark"
-                    : "bg-secondary"
-                }`}
+              <select
+                className="form-select mb-3"
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
               >
-                {task.status}
-              </span>
+                <option value="">Selecciona un proyecto</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+
+              <div className="time-control-center">
+                <div className="time-control-buttons">
+                  {!activeSessionId ? (
+                    <button className="time-btn play" onClick={startSession}>
+                      <FaPlay />
+                    </button>
+                  ) : (
+                    <button className="time-btn stop" onClick={stopSession}>
+                      <FaStop />
+                    </button>
+                  )}
+                </div>
+
+                <div className="time-counter mt-2">
+                  {activeSessionId ? liveTime : "00:00:00"}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
-
-        <h5 className="fw-semibold mb-2">Control de tiempo</h5>
-        <div className="card p-3 text-center small-card">
-          <select
-            className="form-select mb-3"
-            value={selectedProjectId}
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-          >
-            <option value="">Selecciona un proyecto</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-          </select>
-
-          <div className="d-flex justify-content-center align-items-center gap-3">
-            {!activeSessionId ? (
-              <button className="btn btn-success btn-sm" onClick={startSession}>
-                <FaPlay /> Iniciar
-              </button>
-            ) : (
-              <button className="btn btn-danger btn-sm" onClick={stopSession}>
-                <FaStop /> Detener
-              </button>
-            )}
-            <div className="fw-bold">{liveTime}</div>
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import API from "../api/axios";
 import { FaPlay, FaStop } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import Menu from "../components/Menu";
 import "../App.css";
 
 export default function TimeControl() {
@@ -12,6 +14,7 @@ export default function TimeControl() {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const timerRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProjects();
@@ -119,74 +122,85 @@ export default function TimeControl() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await API.post("/logout");
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
-    <div className="container py-4">
-      <h2 className="fw-bold mb-3">⏱ Control de tiempo</h2>
+    <div className="dashboard-container d-flex page-enter">
+      <Menu active="tiempo" onLogout={handleLogout} />
 
-      {message.text && (
-        <div
-          className={`alert ${
-            message.type === "success" ? "alert-success" : "alert-danger"
-          } text-center fw-semibold`}
-        >
-          {message.text}
-        </div>
-      )}
+      <div className="content flex-grow-1 p-3">
+        <h2 className="fw-bold mb-3">⏱ Control de tiempo</h2>
 
-      {/* Selector de proyecto */}
-      <select
-        className="form-select mb-3"
-        value={selectedProjectId}
-        onChange={(e) => setSelectedProjectId(e.target.value)}
-      >
-        <option value="">Selecciona un proyecto</option>
-        {projects.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.title}
-          </option>
-        ))}
-      </select>
-
-      {/* Botones + contador */}
-      <div className="d-flex justify-content-center align-items-center gap-3 mb-4 flex-wrap">
-        {!activeSessionId ? (
-          <button className="btn btn-success btn-sm" onClick={startSession}>
-            <FaPlay /> Iniciar
-          </button>
-        ) : (
-          <button className="btn btn-danger btn-sm" onClick={stopSession}>
-            <FaStop /> Detener
-          </button>
+        {message.text && (
+          <div
+            className={`alert ${
+              message.type === "success" ? "alert-success" : "alert-danger"
+            } text-center fw-semibold`}
+          >
+            {message.text}
+          </div>
         )}
-        <div className="fw-bold fs-5">{liveTime}</div>
-      </div>
 
-      {/* Historial */}
-      <div className="table-responsive">
-        <table className="table table-bordered">
-          <thead className="table-light">
-            <tr>
-              <th>Proyecto</th>
-              <th>Descripción</th>
-              <th>Inicio</th>
-              <th>Fin</th>
-              <th>Duración</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((s) => (
-              <tr key={s.id}>
-                <td>{s.project?.title || "Sin título"}</td>
-                <td>{s.project?.description || "Sin descripción"}</td>
-                <td>{toLocal(s.start_time).toLocaleString()}</td>
-                <td>
-                  {s.end_time ? toLocal(s.end_time).toLocaleString() : "—"}
-                </td>
-                <td>{formatDuration(s.start_time, s.end_time)}</td>
+        <select
+          className="form-select mb-3"
+          value={selectedProjectId}
+          onChange={(e) => setSelectedProjectId(e.target.value)}
+        >
+          <option value="">Selecciona un proyecto</option>
+          {projects.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
+            </option>
+          ))}
+        </select>
+
+        <div className="d-flex justify-content-center align-items-center gap-3 mb-4 flex-wrap">
+          {!activeSessionId ? (
+            <button className="btn btn-purple btn-sm" onClick={startSession}>
+              <FaPlay /> Iniciar
+            </button>
+          ) : (
+            <button className="btn btn-outline-purple btn-sm" onClick={stopSession}>
+              <FaStop /> Detener
+            </button>
+          )}
+          <div className="fw-bold fs-5">{liveTime}</div>
+        </div>
+
+        <div className="table-responsive">
+          <table className="table table-bordered table-sm">
+            <thead className="table-light">
+              <tr>
+                <th>Proyecto</th>
+                <th>Descripción</th>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Duración</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sessions.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.project?.title || "Sin título"}</td>
+                  <td>{s.project?.description || "Sin descripción"}</td>
+                  <td>{toLocal(s.start_time).toLocaleString()}</td>
+                  <td>
+                    {s.end_time ? toLocal(s.end_time).toLocaleString() : "—"}
+                  </td>
+                  <td>{formatDuration(s.start_time, s.end_time)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

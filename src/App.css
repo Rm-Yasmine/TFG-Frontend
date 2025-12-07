@@ -836,3 +836,26 @@ h2, h3 {
   color: #888;
   margin-bottom: 6px;
 }
+
+/*-------- Time Control -------------*/
+
+.btn-purple {
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+}
+
+.btn-purple:hover {
+  background-color: #5a35a0;
+}
+
+.btn-outline-purple {
+  border: 2px solid #6f42c1;
+  color: #6f42c1;
+  background-color: transparent;
+}
+
+.btn-outline-purple:hover {
+  background-color: #6f42c1;
+  color: white;
+}
