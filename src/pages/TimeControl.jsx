@@ -100,7 +100,6 @@ export default function TimeControl() {
       setActiveSessionId(data.data.id);
       startLiveTimer(data.data.start_time);
       fetchSessions();
-      setMessage({ type: "success", text: "Sesión iniciada 🎉" });
     } catch (err) {
       console.error("Error iniciando:", err);
       setMessage({ type: "error", text: "Error al iniciar sesión" });
@@ -115,7 +114,6 @@ export default function TimeControl() {
       stopLiveTimer();
       setLiveTime("00:00:00");
       fetchSessions();
-      setMessage({ type: "success", text: "Sesión detenida ✅" });
     } catch (err) {
       console.error("Error deteniendo:", err);
       setMessage({ type: "error", text: "Error al detener sesión" });

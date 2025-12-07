@@ -13,9 +13,6 @@ export default function Dashboard() {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [sessions, setSessions] = useState([]);
 
-  const [visibleSessions, setVisibleSessions] = useState(5);
-  const [showAll, setShowAll] = useState(false);
-
   const [liveTime, setLiveTime] = useState("00:00:00");
   const timerRef = useRef(null);
 
@@ -30,6 +27,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetchUser();
     return () => clearInterval(timerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -42,6 +40,7 @@ export default function Dashboard() {
       stopLiveTimer();
       setLiveTime("00:00:00");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions]);
 
   const fetchUser = async () => {
@@ -148,16 +147,6 @@ export default function Dashboard() {
     }
   };
 
-
-  const toggleSessions = () => {
-    if (showAll) {
-      setVisibleSessions(5);
-      setShowAll(false);
-    } else {
-      setVisibleSessions(sessions.length);
-      setShowAll(true);
-    }
-  };
 
   const handleLogout = async () => {
     try {
