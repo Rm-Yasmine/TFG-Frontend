@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import API from "../api/axios";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../App.css";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -10,6 +9,8 @@ export default function Register() {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const navigate = useNavigate();
+
+  const api = "https://tfg-backend-production-bc6a.up.railway.app/api";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,28 +42,38 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validaciones
     if (errors.email || errors.password) {
-      setMessage({ type: "error", text: "Corrige los errores antes de continuar" });
+      setMessage({
+        type: "error",
+        text: "Corrige los errores antes de continuar",
+      });
       return;
     }
 
     setLoading(true);
+    setMessage({ type: "", text: "" });
 
     try {
-      const { data } = await API.post("/register", form);
+      const { data } = await axios.post(`${api}/register`, form);
 
-      setMessage({ type: "success", text: "Cuenta creada correctamente 🎉" });
+      setMessage({
+        type: "success",
+        text: "Cuenta creada. Revisa tu correo para el PIN de verificación.",
+      });
 
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      }
+      // Redirección a la página de verificación
+      setTimeout(() => {
+        navigate(`/verify?email=${form.email}`);
+      }, 1500);
 
-      setTimeout(() => navigate("/"), 2000); 
     } catch (error) {
       console.error(error);
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Error al registrarte. Verifica tus datos.",
+        text:
+          error.response?.data?.message ||
+          "Error al registrarte. Verifica tus datos.",
       });
     } finally {
       setLoading(false);
@@ -72,6 +83,8 @@ export default function Register() {
   return (
     <div className="login-page container-fluid d-flex align-items-center justify-content-center vh-100">
       <div className="login-card row shadow rounded-4 overflow-hidden">
+
+        {/* PANEL IZQUIERDO */}
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-center gradient-bg text-white text-center p-5">
           <h3 className="fw-bold mb-3">¡Bienvenida de nuevo!</h3>
           <p className="mb-4 small">Tu espacio creativo te espera.</p>
@@ -83,9 +96,11 @@ export default function Register() {
           </button>
         </div>
 
+        {/* PANEL DERECHO */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
           <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
 
+          {/* MENSAJES */}
           {message.text && (
             <div
               className={`alert ${
@@ -113,7 +128,9 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            {errors.email && <small className="text-danger">{errors.email}</small>}
+            {errors.email && (
+              <small className="text-danger">{errors.email}</small>
+            )}
 
             <input
               className="form-control mb-1 py-2"
@@ -123,9 +140,14 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            {errors.password && <small className="text-danger">{errors.password}</small>}
+            {errors.password && (
+              <small className="text-danger">{errors.password}</small>
+            )}
 
-            <button className="btn btn-primary w-100 py-2 mt-3" disabled={loading}>
+            <button
+              className="btn btn-primary w-100 py-2 mt-3"
+              disabled={loading}
+            >
               {loading ? "Registrando..." : "REGISTRARSE"}
             </button>
           </form>
