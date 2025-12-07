@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../api/axios";
 
 import Menu from "../components/Menu";
@@ -27,6 +27,7 @@ export default function ProjectDetail() {
   const [email, setEmail] = useState("");
 
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   const fetchUser = async () => {
     try {
@@ -40,6 +41,7 @@ export default function ProjectDetail() {
   useEffect(() => {
     fetchUser();
     fetchProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProject = async () => {
@@ -75,12 +77,21 @@ export default function ProjectDetail() {
       console.error("Error añadiendo miembro:", e);
     }
   };
+  const handleLogout = async () => {
+  try {
+    await API.post("/logout");              
+    localStorage.removeItem("token");       
+    navigate("/login");                    
+  } catch (error) {
+    console.error("Error cerrando sesión:", error);
+  }
+};
 
   if (!project) return <p className="text-center mt-5">Cargando...</p>;
 
   return (
     <div className="project-detail-container d-flex">
-      <Menu active="proyectos"  />
+      <Menu active="proyectos"  onLogout={handleLogout} />
 
       <div className="content flex-grow-1 p-4 animate-fade">
         <div className="d-flex justify-content-between align-items-center">
@@ -128,14 +139,12 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* DRAWER DERECHA */}
       <TaskDrawer
         open={drawerOpen}
         task={selectedTask}
         onClose={() => setDrawerOpen(false)}
       />
 
-      {/* MODALES EXISTENTES */}
       <ModalCreateTask
         show={showCreate}
         onHide={() => setShowCreate(false)}
@@ -158,7 +167,6 @@ export default function ProjectDetail() {
         onSuccess={refresh}
       />
 
-      {/* NUEVO MODAL AÑADIR MIEMBRO */}
       {showAddMember && (
         <div className="modal-backdrop-custom">
           <div className="modal-custom card p-4 shadow-lg">

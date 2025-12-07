@@ -5,6 +5,7 @@ import esLocale from "date-fns/locale/es";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import API from "../api/axios";
 import Menu from "../components/Menu";
+import { useNavigate } from "react-router-dom";
 
 const locales = { es: esLocale };
 const localizer = dateFnsLocalizer({
@@ -107,13 +108,25 @@ export default function Calendar() {
     };
   };
 
+  const navigate = useNavigate();
+
+const handleLogout = async () => {
+  try {
+    await API.post("/logout");              // Llama a tu backend
+    localStorage.removeItem("token");       // Borra el token guardado
+    navigate("/login");                     // Redirige al login
+  } catch (error) {
+    console.error("Error cerrando sesión:", error);
+  }
+};
+
   const EventComponent = ({ event }) => {
     return <div style={{ pointerEvents: "none" }}>{` ${event.title}`}</div>;
   };
 
   return (
     <div className="dashboard-container d-flex">
-      <Menu active="calendar" />
+      <Menu active="calendar" onLogout={handleLogout} />
       <div className="content flex-grow-1 p-4">
         <h3 className="fw-bold mb-4">Calendario</h3>
 
