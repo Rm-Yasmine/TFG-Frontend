@@ -78,24 +78,29 @@ export default function ProjectDetail() {
     }
   };
   const handleLogout = async () => {
-  try {
-    await API.post("/logout");              
-    localStorage.removeItem("token");       
-    navigate("/login");                    
-  } catch (error) {
-    console.error("Error cerrando sesión:", error);
-  }
-};
+    try {
+      await API.post("/logout");
+      localStorage.removeItem("token");
+      navigate("/login");
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    }
+  };
 
   if (!project) return <p className="text-center mt-5">Cargando...</p>;
 
   return (
     <div className="project-detail-container d-flex">
-      <Menu active="proyectos"  onLogout={handleLogout} />
+      <Menu active="proyectos" onLogout={handleLogout} />
 
       <div className="content flex-grow-1 p-4 animate-fade">
         <div className="d-flex justify-content-between align-items-center">
-          <h2 className="fw-bold">{project.title}</h2>
+          <div className="d-flex align-items-center mb-3">
+            <button className="btn-back" onClick={() => navigate("/projects")}>
+              ←
+            </button>
+            <h2 className="fw-bold ms-2">{project.title}</h2>
+          </div>
 
           <button
             className="btn-add-member"

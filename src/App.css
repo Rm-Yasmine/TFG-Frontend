@@ -94,12 +94,10 @@ h2, h3 {
 
 /* estilos de la pagina principal */
 
-/* layout general */
 .dashboard-container {
   min-height: 100vh;
   background-color: #f8f9fa;
 }
-
 /* ---------- Layout general ---------- */
 .dashboard-container {
   min-height: 100vh;
@@ -115,20 +113,23 @@ h2, h3 {
 }
 
 .projects-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  width: 100%;
-  margin-bottom: 8px;
+   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
 }
 
 .project-card {
-  background-color: #ffffff;
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 6px 18px rgba(18, 23, 40, 0.04);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-  border: 1px solid rgba(18,23,40,0.04);
+ background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
+  max-height: 160px;
+  overflow: hidden;
 }
 
 .project-card:hover {
@@ -247,48 +248,6 @@ h2, h3 {
   color: #222;
 }
 
-/* ---------- HISTORIAL (tabla) ---------- */
-.sessions-table-wrap {
-  overflow: auto;
-  border-radius: 10px;
-}
-
-.sessions-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-  background: #fff;
-}
-
-.sessions-table thead th {
-  text-align: left;
-  padding: 12px 14px;
-  font-weight: 600;
-  background: #fff;
-  border-bottom: 1px solid #6b3ee0;
-}
-
-.sessions-table tbody td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #6b3ee0;
-  color: #444;
-  vertical-align: middle;
-}
-
-/* boton cargar más */
-.btn-outline-more {
-  border: 1px solid #7a48e3;
-  color: #7a48e3;
-  background: transparent;
-  padding: 8px 14px;
-  border-radius: 8px;
-}
-
-.btn-outline-more:hover {
-  background: #7a48e3;
-  color: white;
-  border: none;
-}
 .sidebar {
   width: 220px;
   background: linear-gradient(180deg,#7a48e3,#6b3ee0);
@@ -792,6 +751,21 @@ h2, h3 {
   background-color: #d6d6d6;
   color: #2c2c2c;
 }
+
+.btn-back {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #6f42c1; /* tu color institucional */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-back:hover {
+  transform: translateX(-3px);
+  color: #4b2a91;
+}
+
 
 
 /* ---------------- BOTÓN AÑADIR MIEMBRO ---------------- */
