@@ -19,7 +19,7 @@ export default function Menu({ onLogout, active = "inicio" }) {
     { name: "Proyectos", path: "/projects", icon: <FaFolderOpen /> },
     { name: "Calendario", path: "/calendar", icon: <FaCalendarAlt /> },
     { name: "Notas", path: "/notes", icon: <FaStickyNote /> },
-    { name: "Tiempo", path: "/tiempo", icon: <FaClock /> }, // 🔥 nueva opción
+    { name: "Tiempo", path: "/tiempo", icon: <FaClock /> }, 
   ];
 
   return (

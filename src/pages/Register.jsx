@@ -51,7 +51,7 @@ export default function Register() {
     try {
       const { data } = await API.post("/register", form);
 
-      setMessage({ type: "success", text: "Cuenta creada correctamente 🎉" });
+      setMessage({ type: "success", text: "Cuenta creada correctamente " });
 
       if (data?.token) {
         localStorage.setItem("token", data.token);
