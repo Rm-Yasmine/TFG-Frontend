@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const navigate = useNavigate();
-
-  const api = "https://tfg-backend-production-bc6a.up.railway.app/api";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,19 +34,18 @@ export default function Register() {
 
   const validatePassword = (password) => {
     const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
     setErrors((prev) => ({
       ...prev,
       password: regex.test(password)
         ? ""
-        : "Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo",
+        : "Debe tener 8 caracteres, mayúscula, número y símbolo",
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones
     if (errors.email || errors.password) {
       setMessage({
         type: "error",
@@ -55,25 +58,22 @@ export default function Register() {
     setMessage({ type: "", text: "" });
 
     try {
-      const { data } = await axios.post(`${api}/register`, form);
+      const response = await API.post("/register", form);
 
       setMessage({
         type: "success",
         text: "Cuenta creada. Revisa tu correo para el PIN de verificación.",
       });
 
-      // Redirección a la página de verificación
+      // Guardar email temporal para Verify.jsx
       setTimeout(() => {
         navigate(`/verify?email=${form.email}`);
       }, 1500);
 
     } catch (error) {
-      console.error(error);
       setMessage({
         type: "error",
-        text:
-          error.response?.data?.message ||
-          "Error al registrarte. Verifica tus datos.",
+        text: error.response?.data?.message || "Error al registrarte.",
       });
     } finally {
       setLoading(false);
@@ -100,7 +100,6 @@ export default function Register() {
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
           <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
 
-          {/* MENSAJES */}
           {message.text && (
             <div
               className={`alert ${
@@ -144,10 +143,16 @@ export default function Register() {
               <small className="text-danger">{errors.password}</small>
             )}
 
-            <button
-              className="btn btn-primary w-100 py-2 mt-3"
-              disabled={loading}
-            >
+            <input
+              className="form-control mb-1 py-2"
+              name="password_confirmation"
+              type="password"
+              placeholder="Confirmar contraseña"
+              onChange={handleChange}
+              required
+            />
+
+            <button className="btn btn-primary w-100 py-2 mt-3" disabled={loading}>
               {loading ? "Registrando..." : "REGISTRARSE"}
             </button>
           </form>

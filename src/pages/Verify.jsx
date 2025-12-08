@@ -1,72 +1,78 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import API from "../api/axios";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Verify() {
-  const [email, setEmail] = useState("");
-  const [pin, setPin] = useState("");
-  const [msg, setMsg] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [params] = useSearchParams();
+  const email = params.get("email");
 
-  const api = "https://tfg-backend-production-bc6a.up.railway.app/api";
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  // Obtiene el email desde la URL: /verify?email=algo@mail.com
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    const emailParam = query.get("email");
+  const navigate = useNavigate();
 
-    if (emailParam) {
-      setEmail(emailParam);
-    }
-  }, []);
-
-  const handleVerify = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
-    setLoading(true);
 
     try {
-      await axios.post(`${api}/verify-pin`, {
+      const { data } = await API.post("/verify-code", {
         email,
-        pin,
+        code,
       });
 
-      setMsg("✔ Verificación completada. Ya puedes iniciar sesión.");
+      localStorage.setItem("token", data.token);
 
-      // Redirección si quieres automática:
-      // setTimeout(() => window.location.href = "/login", 1500);
+      setMessage("Correo verificado correctamente. Redirigiendo...");
 
-    } catch (err) {
-      setMsg("❌ PIN incorrecto o expirado.");
-    } finally {
-      setLoading(false);
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+
+    } catch (error) {
+      setMessage(
+        error.response?.data?.message || "Código incorrecto."
+      );
     }
   };
 
+  const resendCode = async () => {
+    setSending(true);
+    try {
+      await API.post("/resend-code", { email });
+      setMessage("Nuevo código enviado a tu correo.");
+    } catch {
+      setMessage("No se pudo reenviar el código.");
+    }
+    setSending(false);
+  };
+
   return (
-    <div style={{ maxWidth: "400px", margin: "0 auto" }}>
+    <div className="container text-center mt-5">
       <h2>Verificar correo</h2>
+      <p>Hemos enviado un código a: <strong>{email}</strong></p>
 
-      {email ? (
-        <p>Introduce el PIN enviado a <strong>{email}</strong></p>
-      ) : (
-        <p style={{ color: "red" }}>No se proporcionó un correo.</p>
-      )}
+      {message && <div className="alert alert-info">{message}</div>}
 
-      {msg && <p>{msg}</p>}
-
-      <form onSubmit={handleVerify}>
+      <form onSubmit={handleSubmit} className="mt-4">
         <input
-          type="text"
-          placeholder="PIN de 6 dígitos"
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
+          className="form-control text-center mb-3"
+          placeholder="Introduce el código"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
           required
         />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Verificando..." : "Verificar PIN"}
-        </button>
+        <button className="btn btn-primary w-100">Verificar</button>
       </form>
+
+      <button
+        onClick={resendCode}
+        className="btn btn-link mt-3"
+        disabled={sending}
+      >
+        {sending ? "Enviando..." : "Reenviar código"}
+      </button>
     </div>
   );
 }
