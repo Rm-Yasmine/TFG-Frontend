@@ -52,7 +52,7 @@ function AnimatedRoutes() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/resetpass" element={<ResetPassword />} />
           <Route path="/tiempo" element={<TimeControl />} />
-          <Route path="/verify" element={<Verify />} />
+          {/* <Route path="/verify" element={<Verify />} /> */}
         </Routes>
       )}
     </>

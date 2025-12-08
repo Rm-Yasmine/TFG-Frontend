@@ -1,15 +1,10 @@
 import React, { useState } from "react";
 import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
+import "../App.css";
 
 export default function Register() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    password_confirmation: "",
-  });
-
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -34,12 +29,12 @@ export default function Register() {
 
   const validatePassword = (password) => {
     const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     setErrors((prev) => ({
       ...prev,
       password: regex.test(password)
         ? ""
-        : "Debe tener 8 caracteres, mayúscula, número y símbolo",
+        : "Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y símbolo",
     }));
   };
 
@@ -47,33 +42,27 @@ export default function Register() {
     e.preventDefault();
 
     if (errors.email || errors.password) {
-      setMessage({
-        type: "error",
-        text: "Corrige los errores antes de continuar",
-      });
+      setMessage({ type: "error", text: "Corrige los errores antes de continuar" });
       return;
     }
 
     setLoading(true);
-    setMessage({ type: "", text: "" });
 
     try {
-      const response = await API.post("/register", form);
+      const { data } = await API.post("/register", form);
 
-      setMessage({
-        type: "success",
-        text: "Cuenta creada. Revisa tu correo para el PIN de verificación.",
-      });
+      setMessage({ type: "success", text: "Cuenta creada correctamente 🎉" });
 
-      // Guardar email temporal para Verify.jsx
-      setTimeout(() => {
-        navigate(`/verify?email=${form.email}`);
-      }, 1500);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
 
+      setTimeout(() => navigate("/"), 2000); 
     } catch (error) {
+      console.error(error);
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Error al registrarte.",
+        text: error.response?.data?.message || "Error al registrarte. Verifica tus datos.",
       });
     } finally {
       setLoading(false);
@@ -83,8 +72,6 @@ export default function Register() {
   return (
     <div className="login-page container-fluid d-flex align-items-center justify-content-center vh-100">
       <div className="login-card row shadow rounded-4 overflow-hidden">
-
-        {/* PANEL IZQUIERDO */}
         <div className="col-md-6 d-flex flex-column justify-content-center align-items-center gradient-bg text-white text-center p-5">
           <h3 className="fw-bold mb-3">¡Bienvenida de nuevo!</h3>
           <p className="mb-4 small">Tu espacio creativo te espera.</p>
@@ -96,7 +83,6 @@ export default function Register() {
           </button>
         </div>
 
-        {/* PANEL DERECHO */}
         <div className="col-md-6 p-5 bg-light d-flex flex-column justify-content-center">
           <h2 className="fw-bold mb-4 text-center">Crea tu cuenta</h2>
 
@@ -127,9 +113,7 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            {errors.email && (
-              <small className="text-danger">{errors.email}</small>
-            )}
+            {errors.email && <small className="text-danger">{errors.email}</small>}
 
             <input
               className="form-control mb-1 py-2"
@@ -139,18 +123,7 @@ export default function Register() {
               onChange={handleChange}
               required
             />
-            {errors.password && (
-              <small className="text-danger">{errors.password}</small>
-            )}
-
-            <input
-              className="form-control mb-1 py-2"
-              name="password_confirmation"
-              type="password"
-              placeholder="Confirmar contraseña"
-              onChange={handleChange}
-              required
-            />
+            {errors.password && <small className="text-danger">{errors.password}</small>}
 
             <button className="btn btn-primary w-100 py-2 mt-3" disabled={loading}>
               {loading ? "Registrando..." : "REGISTRARSE"}
