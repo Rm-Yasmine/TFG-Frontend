@@ -16,7 +16,6 @@ import Notes from "../pages/Notes";
 import Calendar from "../pages/Calendar";
 import ResetPassword from "../pages/ResetPassword";
 import TimeControl from "../pages/TimeControl";
-import Verify from "../pages/Verify";
 function AnimatedRoutes() {
   const location = useLocation();
   const nodeRef = useRef(null);
@@ -52,7 +51,6 @@ function AnimatedRoutes() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/resetpass" element={<ResetPassword />} />
           <Route path="/tiempo" element={<TimeControl />} />
-          {/* <Route path="/verify" element={<Verify />} /> */}
         </Routes>
       )}
     </>
