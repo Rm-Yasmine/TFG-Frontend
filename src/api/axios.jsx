@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://tfg-backend-production-bc6a.up.railway.app/api",
+  baseURL: "https://tfg-backend-ochre.vercel.app/api/api",
   headers: {
     "Accept": "application/json",
   },

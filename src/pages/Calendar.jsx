@@ -23,6 +23,10 @@ const projectColors = [
   "#00f5d4",
   "#ffb700",
   "#f8961e",
+  "#f3722c",
+  "#90be6d",
+  "#43aa8b",
+  "#577590",
 ];
 
 export default function Calendar() {
@@ -112,9 +116,9 @@ export default function Calendar() {
 
 const handleLogout = async () => {
   try {
-    await API.post("/logout");              // Llama a tu backend
-    localStorage.removeItem("token");       // Borra el token guardado
-    navigate("/login");                     // Redirige al login
+    await API.post("/logout");              
+    localStorage.removeItem("token");       
+    navigate("/login");                     
   } catch (error) {
     console.error("Error cerrando sesión:", error);
   }

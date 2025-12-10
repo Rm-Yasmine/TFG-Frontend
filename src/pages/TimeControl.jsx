@@ -19,11 +19,9 @@ export default function TimeControl() {
     fetchProjects();
     fetchSessions();
     return () => clearInterval(timerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // =====================
-  //  UTILIDADES
-  // =====================
 
   const toLocal = (dateString) => new Date(dateString + " UTC");
 
@@ -51,9 +49,6 @@ export default function TimeControl() {
     timerRef.current = null;
   };
 
-  // =====================
-  //  FETCH
-  // =====================
 
   const fetchProjects = async () => {
     const { data } = await API.get("/projects/sorted-by-end-date");
@@ -82,9 +77,7 @@ export default function TimeControl() {
     }
   };
 
-  // =====================
-  //  START / STOP
-  // =====================
+
 
   const startSession = async () => {
     if (!selectedProjectId) return alert("Selecciona un proyecto");
@@ -111,9 +104,7 @@ export default function TimeControl() {
     fetchSessions();
   };
 
-  // =====================
-  //  LOGOUT
-  // =====================
+
 
   const handleLogout = async () => {
     await API.post("/logout");
@@ -121,9 +112,7 @@ export default function TimeControl() {
     navigate("/login");
   };
 
-  // =====================
-  //  AGRUPAR POR FECHA
-  // =====================
+  
 
   const sessionsByDate = sessions.reduce((acc, s) => {
     const date = toLocal(s.start_time).toLocaleDateString();
@@ -132,9 +121,7 @@ export default function TimeControl() {
     return acc;
   }, {});
 
-  // =====================
-  //  RENDER
-  // =====================
+  
 
   return (
     <div className="dashboard-container d-flex page-enter">
@@ -143,7 +130,6 @@ export default function TimeControl() {
       <div className="content flex-grow-1 p-4">
         <h2 className="fw-bold mb-4">Control de tiempo</h2>
 
-        {/* SELECT + BOTÓN + TIEMPO */}
         <div className="d-flex align-items-center gap-4 mb-5">
 
           <select
@@ -159,7 +145,6 @@ export default function TimeControl() {
             ))}
           </select>
 
-          {/* ✅ MISMO BOTÓN QUE DASHBOARD */}
           {!activeSessionId ? (
             <button className="time-btn play" onClick={startSession}>
               <FaPlay />
@@ -173,7 +158,6 @@ export default function TimeControl() {
           <div className="time-counter fs-3 fw-bold">{liveTime}</div>
         </div>
 
-        {/* SESIONES POR DÍA */}
         {Object.keys(sessionsByDate).map((day) => (
           <div key={day} className="mb-5">
             <h6 className="fw-bold text-muted mb-3">{day}</h6>

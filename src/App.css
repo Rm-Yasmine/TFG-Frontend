@@ -22,7 +22,6 @@
   background: radial-gradient(circle at top left, #b57cff, #7a48e3);
 }
 
-/* Botones */
 .btn-primary {
   background-color: #7a48e3 !important;
   border: none;
@@ -98,14 +97,12 @@ h2, h3 {
   min-height: 100vh;
   background-color: #f8f9fa;
 }
-/* ---------- Layout general ---------- */
 .dashboard-container {
   min-height: 100vh;
   background: #f7f7f7;
   display: flex;
 }
 
-/* el contenido principal */
 .content {
   flex-grow: 1;
   padding: 28px;
@@ -157,7 +154,6 @@ h2, h3 {
   font-size: 0.88rem;
 }
 
-/* ---------- TARJETAS GENERALES ---------- */
 .dashboard-card {
   background: #fff;
   border-radius: 14px;
@@ -165,7 +161,6 @@ h2, h3 {
   border: 1px solid rgba(18,23,40,0.04);
 }
 
-/* ---------- TAREAS ---------- */
 .task-item {
   background: #fff;
   padding: 14px 16px;
@@ -475,7 +470,6 @@ h2, h3 {
   gap: 16px;
 }
 
-/* Tarjeta de proyecto */
 .project-card {
   background: #fff;
   border-radius: 10px;
@@ -494,7 +488,6 @@ h2, h3 {
   transform: translateY(-2px);
 }
 
-/* Título */
 .project-card h5 {
   font-size: 16px;
   font-weight: 600;
@@ -505,7 +498,6 @@ h2, h3 {
   text-overflow: ellipsis;
 }
 
-/* Descripción */
 .project-card p {
   font-size: 14px;
   color: #666;
@@ -514,7 +506,6 @@ h2, h3 {
   text-overflow: ellipsis;
 }
 
-/* Footer */
 .project-card .small {
   font-size: 13px;
   color: #999;
@@ -634,7 +625,6 @@ h2, h3 {
 
 /* detalles del proyecto */
 
-/* Animaciones */
 .animate-fade {
   animation: fade 0.4s ease;
 }
@@ -757,7 +747,7 @@ h2, h3 {
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #6f42c1; /* tu color institucional */
+  color: #6f42c1; 
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -768,7 +758,6 @@ h2, h3 {
 
 
 
-/* ---------------- BOTÓN AÑADIR MIEMBRO ---------------- */
 .btn-add-member {
   background: #ffffff;
   border: 2px solid #8758ff;
@@ -786,7 +775,6 @@ h2, h3 {
   box-shadow: 0 4px 10px rgba(135, 88, 255, 0.3);
 }
 
-/* ---------------- BACKDROP MODAL ---------------- */
 .modal-backdrop-custom {
   position: fixed;
   top: 0;
@@ -802,7 +790,6 @@ h2, h3 {
   animation: fade 0.3s ease;
 }
 
-/* ---------------- MODAL ---------------- */
 .modal-custom {
   width: 95%;
   max-width: 420px;
@@ -822,7 +809,6 @@ h2, h3 {
   }
 }
 
-/* INPUT */
 .modal-custom input {
   border-radius: 10px;
   border: 2px solid #ded9ff;
@@ -835,7 +821,6 @@ h2, h3 {
   box-shadow: 0 0 0 3px rgba(135, 88, 255, 0.25);
 }
 
-/* BOTONES DEL MODAL */
 .modal-custom .btn-primary {
   background: #8758ff;
   border-radius: 8px;
@@ -860,7 +845,6 @@ h2, h3 {
   background: #cfc7ff;
 }
 
-/* ---------------- RESPONSIVE ---------------- */
 @media (max-width: 768px) {
   .content {
     padding: 20px !important;
@@ -894,7 +878,6 @@ h2, h3 {
 
 
 
-/*-------------Calendar---------------*/
 
 .rbc-event {
   border-radius: 8px !important;
@@ -916,8 +899,7 @@ h2, h3 {
 .rbc-event-label {
   display: none !important;
 }
-/*---------------Task Drawer--------------------*/
-/* Fondo oscuro al abrir el drawer */
+
 .overlay {
   position: fixed;
   top: 0; left: 0;
@@ -932,7 +914,6 @@ h2, h3 {
   pointer-events: auto;
 }
 
-/* Drawer */
 .task-drawer {
   position: fixed;
   top: 0;
@@ -950,7 +931,6 @@ h2, h3 {
   transform: translateX(0);
 }
 
-/* Header */
 .drawer-header {
   background-color: #f4f0ff;
   padding: 18px;
@@ -974,7 +954,6 @@ h2, h3 {
   transform: rotate(90deg);
 }
 
-/* Body */
 .drawer-body {
   padding: 18px;
 }

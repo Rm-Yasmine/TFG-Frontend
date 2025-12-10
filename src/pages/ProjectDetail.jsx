@@ -47,7 +47,7 @@ export default function ProjectDetail() {
   const fetchProject = async () => {
     try {
       const { data } = await API.get(
-        `https://tfg-backend-production-bc6a.up.railway.app/api/projects/${id}`
+        `https://tfg-backend-ochre.vercel.app/api/api/projects/${id}`
       );
       if (data.status === "success") setProject(data.data);
     } catch (e) {

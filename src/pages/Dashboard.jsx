@@ -167,7 +167,6 @@ export default function Dashboard() {
       <div className="content flex-grow-1 p-4">
         <h2 className="fw-bold mb-4">Bienvenida, {user.name}</h2>
 
-        {/* PROYECTOS */}
         <h5 className="fw-semibold mb-3">Proyectos recientes</h5>
         <div className="projects-container mb-4">
           {projects.slice(0, 4).map((project) => (
@@ -193,7 +192,6 @@ export default function Dashboard() {
         </div>
 
         <div className="row g-4">
-          {/* TAREAS */}
           <div className="col-md-7">
             <div className="card dashboard-card p-3">
               <h5 className="fw-semibold mb-3">Mis tareas asignadas</h5>
@@ -226,7 +224,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* CONTROL DE TIEMPO */}
           <div className="col-md-5">
             <div className="card dashboard-card p-3">
               <h5 className="fw-semibold mb-3">Control de tiempo</h5>
