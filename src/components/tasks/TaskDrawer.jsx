@@ -2,9 +2,9 @@ export default function TaskDrawer({ open, task, onClose }) {
   const assigneeName = task?.assignee?.name || "Sin asignar";
 
   const statusStyles = {
-    completed: { text: "Completado", bg: "#e8fdf2", color: "#2e7d32" }, // verde suave
-    pending: { text: "Pendiente", bg: "#fff8e1", color: "#b8860b" },   // amarillo suave
-    in_progress: { text: "En progreso", bg: "#f3e8ff", color: "#7a48e3" }, // lavanda
+    completed: { text: "Completado", bg: "#e8fdf2", color: "#2e7d32" }, 
+    pending: { text: "Pendiente", bg: "#fff8e1", color: "#b8860b" },   
+    in_progress: { text: "En progreso", bg: "#f3e8ff", color: "#7a48e3" }, 
     default: { text: "Desconocido", bg: "#f0f0f0", color: "#666" }
   };
 
