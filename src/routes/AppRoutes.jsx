@@ -16,6 +16,7 @@ import Notes from "../pages/Notes";
 import Calendar from "../pages/Calendar";
 import ResetPassword from "../pages/ResetPassword";
 import TimeControl from "../pages/TimeControl";
+import ProjectChat from "../pages/ProjectChat";
 function AnimatedRoutes() {
   const location = useLocation();
   const nodeRef = useRef(null);
@@ -51,6 +52,7 @@ function AnimatedRoutes() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/resetpass" element={<ResetPassword />} />
           <Route path="/tiempo" element={<TimeControl />} />
+          <Route path="/projects/:id/chat" element={<ProjectChat />} />
         </Routes>
       )}
     </>
