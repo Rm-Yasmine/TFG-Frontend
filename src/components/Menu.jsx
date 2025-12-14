@@ -7,7 +7,6 @@ import {
   FaStickyNote,
   FaClock,      
   FaSignOutAlt,
-  FaComments,
 } from "react-icons/fa";
 import logo from "../assets/logo_web.svg";
 import "../App.css";
@@ -21,7 +20,6 @@ export default function Menu({ onLogout, active = "inicio" }) {
     { name: "Calendario", path: "/calendar", icon: <FaCalendarAlt /> },
     { name: "Notas", path: "/notes", icon: <FaStickyNote /> },
     { name: "Tiempo", path: "/tiempo", icon: <FaClock /> }, 
-    {name:"Mensajes", path:"/projects/:id/chat", icon:<FaComments />},
   ];
 
   return (
