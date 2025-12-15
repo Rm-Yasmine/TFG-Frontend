@@ -5,19 +5,20 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    status: "",
-    assignee_id: "",
+    status: "pending", 
     due_date: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (task) {
       setFormData({
-        title: task.title || "",
-        description: task.description || "",
-        status: task.status || "",
-        assignee_id: task.assignee_id || "",
-        due_date: task.due_date || "",
+        title: task.title ?? "",
+        description: task.description ?? "",
+        status: task.status ?? "pending", 
+        due_date: task.due_date ?? "",
       });
     }
   }, [task]);
@@ -26,17 +27,41 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const submit = async () => {
-    await API.put(`/tasks/${task.id}`, formData);
-    onSuccess();
-    onHide();
+    try {
+      setLoading(true);
+      setError(null);
+
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description || "",
+        status: formData.status, 
+        due_date: formData.due_date || null,
+      };
+
+      await API.put(`/tasks/${task.id}`, payload);
+
+      onSuccess();
+      onHide();
+    } catch (err) {
+      console.error("Error actualizando tarea:", err.response?.data || err);
+      setError("No se pudo actualizar la tarea.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="modal-backdrop-custom modal fade show custom-modal" style={{ display: "block" }}>
+    <div
+      className="modal-backdrop-custom modal fade show custom-modal"
+      style={{ display: "block" }}
+    >
       <div className="modal-custom modal-dialog">
         <div className="modal-content animate-fade">
           <div className="modal-header">
@@ -45,6 +70,10 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
           </div>
 
           <div className="modal-body">
+            {error && (
+              <div className="alert alert-danger small mb-2">{error}</div>
+            )}
+
             <input
               className="form-control mb-2"
               name="title"
@@ -52,6 +81,7 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
               onChange={handleChange}
               placeholder="Título"
             />
+
             <textarea
               className="form-control mb-2"
               name="description"
@@ -59,16 +89,18 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
               onChange={handleChange}
               placeholder="Descripción"
             />
+
             <select
               className="form-control mb-2"
               name="status"
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="PENDING">Pendiente</option>
-              <option value="IN_PROGRESS">En progreso</option>
-              <option value="COMPLETED">Completada</option>
+              <option value="pending">Pendiente</option>
+              <option value="in_progress">En progreso</option>
+              <option value="completed">Completada</option>
             </select>
+
             <input
               className="form-control mb-2"
               type="date"
@@ -79,11 +111,20 @@ export default function ModalEditTask({ show, onHide, task, onSuccess }) {
           </div>
 
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onHide}>
+            <button
+              className="btn btn-secondary"
+              onClick={onHide}
+              disabled={loading}
+            >
               Cancelar
             </button>
-            <button className="btn btn-purple" onClick={submit}>
-              Guardar cambios
+
+            <button
+              className="btn btn-purple"
+              onClick={submit}
+              disabled={loading}
+            >
+              {loading ? "Guardando..." : "Guardar cambios"}
             </button>
           </div>
         </div>

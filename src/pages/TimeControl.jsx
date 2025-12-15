@@ -15,19 +15,24 @@ export default function TimeControl() {
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
+
   useEffect(() => {
     fetchProjects();
     fetchSessions();
-    return () => clearInterval(timerRef.current);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
-  const toLocal = (dateString) => new Date(dateString + " UTC");
+  const toDate = (value) => new Date(value);
 
   const formatDuration = (start, end) => {
-    const a = toLocal(start).getTime();
-    const b = end ? toLocal(end).getTime() : Date.now();
+    const a = toDate(start).getTime();
+    const b = end ? toDate(end).getTime() : Date.now();
+
     const diff = Math.max(0, Math.floor((b - a) / 1000));
 
     const h = String(Math.floor(diff / 3600)).padStart(2, "0");
@@ -39,71 +44,99 @@ export default function TimeControl() {
 
   const startLiveTimer = (startTime) => {
     stopLiveTimer();
-    const update = () => setLiveTime(formatDuration(startTime, null));
+
+    const update = () => {
+      setLiveTime(formatDuration(startTime, null));
+    };
+
     update();
     timerRef.current = setInterval(update, 1000);
   };
 
   const stopLiveTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = null;
-  };
-
-
-  const fetchProjects = async () => {
-    const { data } = await API.get("/projects/sorted-by-end-date");
-    if (data.status === "success") setProjects(data.data || []);
-  };
-
-  const fetchSessions = async () => {
-    const { data } = await API.get("/time-sessions");
-
-    if (data.status === "success") {
-      const list = (data.data || []).sort(
-        (a, b) => new Date(b.start_time) - new Date(a.start_time)
-      );
-
-      setSessions(list);
-
-      const active = list.find((s) => !s.end_time);
-      if (active) {
-        setActiveSessionId(active.id);
-        startLiveTimer(active.start_time);
-      } else {
-        setActiveSessionId(null);
-        stopLiveTimer();
-        setLiveTime("00:00:00");
-      }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   };
 
+ 
+  const fetchProjects = async () => {
+    try {
+      const { data } = await API.get("/projects/sorted-by-end-date");
+      if (data.status === "success") {
+        setProjects(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error cargando proyectos", error);
+    }
+  };
 
+  const fetchSessions = async () => {
+    try {
+      const { data } = await API.get("/time-sessions");
+
+      if (data.status === "success") {
+        const list = (data.data || []).sort(
+          (a, b) => new Date(b.start_time) - new Date(a.start_time)
+        );
+
+        setSessions(list);
+
+        const active = list.find((s) => !s.end_time);
+
+        if (active) {
+          setActiveSessionId(active.id);
+          startLiveTimer(active.start_time);
+        } else {
+          setActiveSessionId(null);
+          stopLiveTimer();
+          setLiveTime("00:00:00");
+        }
+      }
+    } catch (error) {
+      console.error("Error cargando sesiones", error);
+    }
+  };
 
   const startSession = async () => {
-    if (!selectedProjectId) return alert("Selecciona un proyecto");
+    if (!selectedProjectId) {
+      alert("Selecciona un proyecto");
+      return;
+    }
 
-    const { data } = await API.post("/time-sessions/start", {
-      project_id: selectedProjectId,
-    });
+    try {
+      const { data } = await API.post("/time-sessions/start", {
+        project_id: selectedProjectId,
+      });
 
-    setActiveSessionId(data.data.id);
-    startLiveTimer(data.data.start_time);
-    fetchSessions();
+      setActiveSessionId(data.data.id);
+      startLiveTimer(data.data.start_time);
+      fetchSessions();
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+          "No se pudo iniciar la sesión de tiempo"
+      );
+    }
   };
 
   const stopSession = async () => {
     if (!activeSessionId) return;
 
-    await API.post("/time-sessions/stop", {
-      session_id: activeSessionId,
-    });
+    try {
+      await API.post("/time-sessions/stop", {
+        session_id: activeSessionId,
+      });
 
-    setActiveSessionId(null);
-    stopLiveTimer();
-    setLiveTime("00:00:00");
-    fetchSessions();
+      setActiveSessionId(null);
+      stopLiveTimer();
+      setLiveTime("00:00:00");
+      fetchSessions();
+    } catch (error) {
+      alert("No se pudo detener la sesión");
+    }
   };
-
 
 
   const handleLogout = async () => {
@@ -113,15 +146,12 @@ export default function TimeControl() {
   };
 
   
-
   const sessionsByDate = sessions.reduce((acc, s) => {
-    const date = toLocal(s.start_time).toLocaleDateString();
+    const date = new Date(s.start_time).toLocaleDateString();
     if (!acc[date]) acc[date] = [];
     acc[date].push(s);
     return acc;
   }, {});
-
-  
 
   return (
     <div className="dashboard-container d-flex page-enter">
@@ -131,11 +161,11 @@ export default function TimeControl() {
         <h2 className="fw-bold mb-4">Control de tiempo</h2>
 
         <div className="d-flex align-items-center gap-4 mb-5">
-
           <select
             className="form-select w-50"
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
+            disabled={!!activeSessionId}
           >
             <option value="">Selecciona un proyecto</option>
             {projects.map((p) => (
