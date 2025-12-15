@@ -4,7 +4,6 @@ import API from "../api/axios";
 
 import Menu from "../components/Menu";
 import TaskRow from "../components/tasks/TaskRow";
-import TaskDrawer from "../components/tasks/TaskDrawer";
 
 import ModalCreateTask from "../components/modals/ModalCreateTask";
 import ModalEditTask from "../components/modals/ModalEditTask";
@@ -14,6 +13,7 @@ import "../App.css";
 
 export default function ProjectDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -21,13 +21,17 @@ export default function ProjectDetail() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showAssign, setShowAssign] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [showAddMember, setShowAddMember] = useState(false);
   const [email, setEmail] = useState("");
 
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUser();
+    fetchProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUser = async () => {
     try {
@@ -38,30 +42,30 @@ export default function ProjectDetail() {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-    fetchProject();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const fetchProject = async () => {
     try {
-      const { data } = await API.get(
-        `https://tfg-backend-ochre.vercel.app/api/api/projects/${id}`
-      );
+      const { data } = await API.get(`/projects/${id}`);
       if (data.status === "success") setProject(data.data);
     } catch (e) {
       console.error("Error cargando proyecto:", e);
     }
   };
 
-  const openDrawer = (task) => {
-    setSelectedTask(task);
-    setDrawerOpen(true);
-  };
-
   const refresh = () => fetchProject();
 
+  const deleteTask = async (taskId) => {
+    if (!window.confirm("¿Seguro que quieres eliminar esta tarea?")) return;
+
+    try {
+      await API.delete(`/tasks/${taskId}`);
+      refresh();
+    } catch (error) {
+      console.error("Error eliminando tarea:", error);
+      alert("No se pudo eliminar la tarea");
+    }
+  };
+
+ 
   const addMember = async () => {
     try {
       const { data } = await API.post(`/projects/${id}/add-member-by-email`, {
@@ -77,6 +81,8 @@ export default function ProjectDetail() {
       console.error("Error añadiendo miembro:", e);
     }
   };
+
+ 
   const handleLogout = async () => {
     try {
       await API.post("/logout");
@@ -87,7 +93,9 @@ export default function ProjectDetail() {
     }
   };
 
-  if (!project) return <p className="text-center mt-5">Cargando...</p>;
+  if (!project) {
+    return <p className="text-center mt-5">Cargando...</p>;
+  }
 
   return (
     <div className="project-detail-container d-flex">
@@ -126,7 +134,6 @@ export default function ProjectDetail() {
                 <TaskRow
                   key={task.id}
                   task={task}
-                  onOpen={() => openDrawer(task)}
                   onEdit={() => {
                     setSelectedTask(task);
                     setShowEdit(true);
@@ -135,6 +142,7 @@ export default function ProjectDetail() {
                     setSelectedTask(task);
                     setShowAssign(true);
                   }}
+                  onDelete={() => deleteTask(task.id)}
                 />
               ))
             ) : (
@@ -143,12 +151,6 @@ export default function ProjectDetail() {
           </div>
         </div>
       </div>
-
-      <TaskDrawer
-        open={drawerOpen}
-        task={selectedTask}
-        onClose={() => setDrawerOpen(false)}
-      />
 
       <ModalCreateTask
         show={showCreate}
