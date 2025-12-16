@@ -1,21 +1,34 @@
-
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 
 export default function ModalAssignTask({ show, onHide, task, onSuccess }) {
   const [members, setMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(true);
-  const [assigneeId, setAssigneeId] = useState(task?.assignee_id || "");
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [assigneeId, setAssigneeId] = useState(null);
+  const [saving, setSaving] = useState(false);
 
+  // 🔁 Reset cuando cambia la tarea
+  useEffect(() => {
+    if (task?.assignee_id) {
+      setAssigneeId(Number(task.assignee_id));
+    } else {
+      setAssigneeId(null);
+    }
+  }, [task]);
+
+  // 👥 Cargar miembros del proyecto
   useEffect(() => {
     if (!show || !task?.project_id) return;
+
+    setLoadingMembers(true);
 
     const fetchMembers = async () => {
       try {
         const { data } = await API.get(`/projects/${task.project_id}`);
-        setMembers(data.data.members || []);
+        setMembers(data.data?.members || []);
       } catch (err) {
         console.error("Error cargando miembros", err);
+        setMembers([]);
       } finally {
         setLoadingMembers(false);
       }
@@ -26,22 +39,31 @@ export default function ModalAssignTask({ show, onHide, task, onSuccess }) {
 
   const handleAssign = async () => {
     if (!task) return;
+
     try {
-      await API.put(`/tasks/${task.id}`, {
-        assignee_id: assigneeId || null,
+      setSaving(true);
+
+      await API.put(`/tasks/${task.id}/assign`, {
+        assignee_id: assigneeId, // number | null
       });
-      onSuccess(); 
+
+      onSuccess();
       onHide();
     } catch (err) {
-      console.error("Error asignando tarea", err);
+      console.error("Error asignando tarea", err.response?.data || err);
       alert("No se pudo asignar la tarea.");
+    } finally {
+      setSaving(false);
     }
   };
 
   if (!show) return null;
 
   return (
-    <div className=" modal-backdrop-custom modal fade show custom-modal" style={{ display: "block" }}>
+    <div
+      className="modal-backdrop-custom modal fade show custom-modal"
+      style={{ display: "block" }}
+    >
       <div className="modal-dialog modal-custom">
         <div className="modal-content animate-fade">
           <div className="modal-header">
@@ -57,8 +79,12 @@ export default function ModalAssignTask({ show, onHide, task, onSuccess }) {
                 <label className="mb-1 fw-semibold">Asignar a:</label>
                 <select
                   className="form-select"
-                  value={assigneeId || ""}
-                  onChange={(e) => setAssigneeId(e.target.value)}
+                  value={assigneeId ?? ""}
+                  onChange={(e) =>
+                    setAssigneeId(
+                      e.target.value ? Number(e.target.value) : null
+                    )
+                  }
                 >
                   <option value="">— Sin asignar —</option>
                   {members.map((m) => (
@@ -72,11 +98,19 @@ export default function ModalAssignTask({ show, onHide, task, onSuccess }) {
           </div>
 
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onHide}>
+            <button
+              className="btn btn-secondary"
+              onClick={onHide}
+              disabled={saving}
+            >
               Cerrar
             </button>
-            <button className="btn btn-purple" onClick={handleAssign}>
-              Asignar
+            <button
+              className="btn btn-purple"
+              onClick={handleAssign}
+              disabled={saving || loadingMembers}
+            >
+              {saving ? "Asignando..." : "Asignar"}
             </button>
           </div>
         </div>
