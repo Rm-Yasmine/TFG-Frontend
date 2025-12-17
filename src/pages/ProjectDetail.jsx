@@ -16,6 +16,8 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
 
   const [project, setProject] = useState(null);
+  const [user, setUser] = useState(null);
+
   const [selectedTask, setSelectedTask] = useState(null);
 
   const [showCreate, setShowCreate] = useState(false);
@@ -25,13 +27,23 @@ export default function ProjectDetail() {
   const [showAddMember, setShowAddMember] = useState(false);
   const [email, setEmail] = useState("");
 
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUser();
-    fetchProject();
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const init = async () => {
+    try {
+      await fetchUser();
+      await fetchProject();
+    } catch (e) {
+      console.error("Error inicial:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchUser = async () => {
     try {
@@ -39,15 +51,28 @@ export default function ProjectDetail() {
       setUser(data.data);
     } catch (err) {
       console.error("Error cargando usuario:", err);
+      handleAuthError(err);
+      throw err;
     }
   };
 
   const fetchProject = async () => {
     try {
       const { data } = await API.get(`/projects/${id}`);
-      if (data.status === "success") setProject(data.data);
-    } catch (e) {
-      console.error("Error cargando proyecto:", e);
+      if (data.status === "success") {
+        setProject(data.data);
+      }
+    } catch (err) {
+      console.error("Error cargando proyecto:", err);
+      handleAuthError(err);
+      throw err;
+    }
+  };
+
+  const handleAuthError = (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("token");
+      navigate("/login");
     }
   };
 
@@ -65,37 +90,36 @@ export default function ProjectDetail() {
     }
   };
 
- 
   const addMember = async () => {
     try {
-      const { data } = await API.post(`/projects/${id}/add-member-by-email`, {
-        email,
-      });
-
-      if (data.status === "success") {
-        setEmail("");
-        setShowAddMember(false);
-        fetchProject();
-      }
+      await API.post(`/projects/${id}/add-member-by-email`, { email });
+      setEmail("");
+      setShowAddMember(false);
+      refresh();
     } catch (e) {
       console.error("Error añadiendo miembro:", e);
+      alert("No se pudo añadir el miembro");
     }
   };
 
- 
   const handleLogout = async () => {
     try {
       await API.post("/logout");
+    } finally {
       localStorage.removeItem("token");
       navigate("/login");
-    } catch (error) {
-      console.error("Error cerrando sesión:", error);
     }
   };
 
-  if (!project) {
+  if (loading) {
     return <p className="text-center mt-5">Cargando...</p>;
   }
+
+  if (!project) {
+    return <p className="text-center mt-5 text-danger">Proyecto no encontrado</p>;
+  }
+
+  const tasks = project.tasks ?? [];
 
   return (
     <div className="project-detail-container d-flex">
@@ -129,8 +153,8 @@ export default function ProjectDetail() {
 
         <div className="task-table card shadow-sm border-0">
           <div className="card-body">
-            {project.tasks.length > 0 ? (
-              project.tasks.map((task) => (
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
                 <TaskRow
                   key={task.id}
                   task={task}
